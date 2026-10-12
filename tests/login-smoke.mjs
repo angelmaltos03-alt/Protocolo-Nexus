@@ -21,14 +21,24 @@ try {
   }));
   if (login.locked || !login.hidden || login.name !== 'Juan Pérez') throw new Error('Login failed: ' + JSON.stringify(login));
 
-  await page.locator('[data-view="misiones"]').click();
-  await page.locator('#missionCards [data-open-session="0"]').click();
+  await page.locator('#guidedStart.is-open').waitFor({ state: 'visible', timeout: 10000 });
+  const onboardingWelcome = await page.locator('#guidedTitle').innerText();
+  if (!onboardingWelcome.includes('Bienvenido a NEXUS')) throw new Error('Post-login welcome guide missing: ' + onboardingWelcome);
+  await page.locator('#guidedContinue').click();
+  await page.locator('#guidedTitle').waitFor({ state: 'visible' });
+  const onboardingMissions = await page.locator('#guidedTitle').innerText();
+  if (!onboardingMissions.includes('primera sesión')) throw new Error('Mission navigation guide missing: ' + onboardingMissions);
+  await page.locator('#guidedContinue').click();
+  await page.locator('#guidedTitle').waitFor({ state: 'visible' });
+  const onboardingChallenge = await page.locator('#guidedTitle').innerText();
+  if (!onboardingChallenge.includes('resolverás cada reto')) throw new Error('Challenge instructions guide missing: ' + onboardingChallenge);
+  await page.locator('#guidedContinue').click();
   await page.locator('.answer-entry-panel').waitFor({ state: 'visible', timeout: 10000 }).catch(async error => { console.error('ANSWER_PANEL_DEBUG', JSON.stringify(await page.evaluate(() => ({title:document.querySelector('#challengeTitle')?.textContent,areaDisplay:getComputedStyle(document.querySelector('#challengeArea')).display,inputsHtml:document.querySelector('#challengeInputs')?.innerHTML,reference:document.querySelector('#missionReference')?.innerText,bodyEnd:document.body.innerText.slice(-1800)}))), 'PAGE_ERRORS', JSON.stringify(errors)); throw error; });
   await page.locator('.answer-option').first().waitFor({ state: 'visible', timeout: 10000 });
   const moduleInstructions = await page.locator('#missionReference').innerText();
   const answerHeading = await page.locator('.answer-entry-panel').innerText();
   const optionCount = await page.locator('.answer-option').count();
-  if (!moduleInstructions.includes('QUÉ HACER EN EL MÓDULO') || !moduleInstructions.includes('regresa a esta misión')) {
+  if (!moduleInstructions.includes('INSTRUCCIONES DETALLADAS') || !moduleInstructions.includes('PASO 2 · ENTREGA TU RESPUESTA') || !moduleInstructions.includes('¿Te equivocaste?')) {
     throw new Error('Module directions/return instructions missing: ' + moduleInstructions);
   }
   if (!answerHeading.includes('Selecciona tu respuesta') || optionCount !== 4) {
@@ -73,7 +83,7 @@ try {
     numericInput: !!document.querySelector('#numericAnswer'),
     numericValue: document.querySelector('#numericAnswer')?.value,
     optionCount: document.querySelectorAll('.answer-option').length,
-    moduleStep: document.querySelector('#missionReference')?.innerText?.includes('PASO 1 · QUÉ HACER EN EL MÓDULO'),
+    moduleStep: document.querySelector('#missionReference')?.innerText?.includes('PASO 1 · INSTRUCCIONES DETALLADAS'),
     answerStep: document.querySelector('.answer-entry-panel')?.innerText?.includes('PASO 2 · ENTREGA TU RESPUESTA'),
     nextVisible: getComputedStyle(document.querySelector('#nextChallenge')).display !== 'none',
     feedback: document.querySelector('#challengeFeedback')?.textContent?.trim()
