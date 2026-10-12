@@ -97,7 +97,7 @@ html,body{background:#050e19}body{font-size:13px}.sidebar{width:144px;background
 @media(max-width:720px){#supplierCostChallenge .supplier-choice-grid{grid-template-columns:1fr}#supplierCostChallenge .supplier-applied-question{padding:16px}#supplierCostChallenge .supplier-pick{min-height:82px}}
 
 /* Guided onboarding: step-by-step participant journey */
-#guidedStart{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(2,8,16,.82);backdrop-filter:blur(7px);color:#edf7ff}
+#guidedStart{position:fixed;inset:0;z-index:100010;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(2,8,16,.82);backdrop-filter:blur(7px);color:#edf7ff}
 #guidedStart.is-open{display:flex}
 #guidedStart .guided-card{width:min(650px,100%);max-height:min(88vh,820px);overflow:auto;border:1px solid #2b5872;border-radius:20px;background:linear-gradient(145deg,#0c2031,#07131f 72%);box-shadow:0 28px 100px #0009;padding:clamp(22px,4vw,38px)}
 #guidedStart .guided-kicker{font-size:11px;letter-spacing:.16em;font-weight:800;color:#5bd8d0;text-transform:uppercase}
@@ -1203,7 +1203,8 @@ function enterAsParticipant(rawName){
     renderIdentity();
     renderReportOnInit();
     renderIdentity();
-    renderGuidedStart(0);
+    // Show onboarding after the login overlay begins closing; keep the welcome above every screen.
+    window.setTimeout(()=>renderGuidedStart(0),220);
   }catch(e){
     console.error('NEXUS: acceso concedido; se omitió una actualización secundaria del dashboard.',e);
     const err=$('#loginError');err.textContent='Acceso concedido. Algunas tarjetas del dashboard no pudieron actualizarse; puedes continuar con la actividad.';err.hidden=false;
