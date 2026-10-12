@@ -92,11 +92,18 @@ try {
     rowFeedback: [...document.querySelectorAll('[id^="supplierChoiceFeedback-"]')].map(el => el.textContent),
     locked: document.querySelector('#supplierAppliedStage')?.classList.contains('hidden')
   }));
-  if (scorecardLive.correctCount !== '5/5 correctas' || scorecardLive.points !== '50 de 50 puntos' || scorecardLive.locked) {
-    throw new Error('Scorecard live feedback or stage unlock failed: ' + JSON.stringify(scorecardLive));
+  if (scorecardLive.correctCount !== '5/5 correctas' || scorecardLive.points !== '50 de 50 puntos' || !scorecardLive.locked) {
+    throw new Error('Scorecard live feedback or pre-validation lock failed: ' + JSON.stringify(scorecardLive));
   }
   await page.locator('#validateSupplierDecisions').click();
   await page.locator('#supplierAppliedStage').waitFor({ state: 'visible', timeout: 10000 });
+  const scorecardUnlocked = await page.evaluate(() => ({
+    locked: document.querySelector('#supplierAppliedStage')?.classList.contains('hidden'),
+    status: document.querySelector('#supplierAppliedStatus')?.textContent
+  }));
+  if (scorecardUnlocked.locked || !scorecardUnlocked.status?.includes('DESBLOQUEADA')) {
+    throw new Error('Correct scorecard did not unlock applied stage: ' + JSON.stringify(scorecardUnlocked));
+  }
   const quoteStart = await page.evaluate(() => ({
     north: document.querySelector('#quoteNorthTotal')?.textContent,
     center: document.querySelector('#quoteCenterTotal')?.textContent
@@ -127,7 +134,7 @@ try {
   await page.locator('#quoteCenterPrice').fill('192');
   if (errors.length) throw new Error('Browser JavaScript errors: ' + errors.join(' | '));
   if (errors.length) throw new Error('Browser JavaScript errors: ' + errors.join(' | '));
-  console.log('NEXUS_LOGIN_ANSWER_SUPPLIER_STAGES_PASS', JSON.stringify({url, ...result, scorecardLive, quoteStart, applied, changedQuote, pageErrors: errors}));
+  console.log('NEXUS_LOGIN_ANSWER_SUPPLIER_STAGES_PASS', JSON.stringify({url, ...result, scorecardLive, scorecardUnlocked, quoteStart, applied, changedQuote, pageErrors: errors}));
 } finally {
   await browser.close();
 }
