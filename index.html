@@ -647,6 +647,7 @@ function enterAsParticipant(rawName){
   }
 }
 $('#participantLoginForm').addEventListener('submit',event=>{event.preventDefault();enterAsParticipant($('#entryFullName').value)});
+$('#loginSubmitButton').addEventListener('click',event=>{event.preventDefault();enterAsParticipant($('#entryFullName').value)});
 document.documentElement.classList.add('login-locked');document.body.classList.add('login-locked');
 
 renderReportOnInit();
