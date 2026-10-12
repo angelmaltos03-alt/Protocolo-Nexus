@@ -34,13 +34,29 @@ try {
   if (!answerHeading.includes('Selecciona tu respuesta') || optionCount !== 4) {
     throw new Error('Visible choice field missing: ' + JSON.stringify({answerHeading, optionCount}));
   }
-  const correctChoices = [0, 1, 2, 3];
-  for (const choice of correctChoices) {
+  const solveCurrentMultipleChoice = async () => {
+    const count = await page.locator('.answer-option').count();
+    for (let choice = 0; choice < count; choice++) {
+      await page.locator('.answer-option').nth(choice).click();
+      await page.locator('#submitAnswer').click();
+      await page.locator('#challengeFeedback').waitFor({ state: 'visible', timeout: 10000 });
+      const outcome = await page.evaluate(() => ({
+        correct: document.querySelector('#challengeFeedback')?.classList.contains('success'),
+        incorrect: document.querySelector('#challengeFeedback')?.classList.contains('error'),
+        message: document.querySelector('#challengeFeedback')?.textContent?.trim()
+      }));
+      if (outcome.correct) {
+        await page.locator('#nextChallenge').waitFor({ state: 'visible', timeout: 10000 });
+        return;
+      }
+      if (!outcome.incorrect) throw new Error('Answer was not evaluated: ' + JSON.stringify(outcome));
+    }
+    throw new Error('None of the displayed options validated as correct for ' + await page.locator('#challengeTitle').innerText());
+  };
+  for (let challenge = 0; challenge < 4; challenge++) {
     await page.locator('.answer-entry-panel').waitFor({ state: 'visible', timeout: 10000 });
-    await page.locator('.answer-option').nth(choice).click();
-    await page.locator('#submitAnswer').click().catch(async error => { console.error('SUBMIT_BUTTON_DEBUG', JSON.stringify(await page.evaluate(() => { const b=document.querySelector('#submitAnswer'),a=document.querySelector('#challengeArea'),r=b?.getBoundingClientRect(); return {title:document.querySelector('#challengeTitle')?.textContent,buttonInlineDisplay:b?.style.display,buttonComputedDisplay:b?getComputedStyle(b).display:null,buttonVisibility:b?getComputedStyle(b).visibility:null,buttonRect:r?{x:r.x,y:r.y,width:r.width,height:r.height}:null,areaDisplay:a?getComputedStyle(a).display:null,inputs:document.querySelector('#challengeInputs')?.innerHTML,reference:document.querySelector('#missionReference')?.innerText}; })), 'PAGE_ERRORS', JSON.stringify(errors)); throw error; });
-    await page.locator('#nextChallenge').waitFor({ state: 'visible', timeout: 10000 }).catch(async error => { console.error('VALIDATION_DEBUG', JSON.stringify(await page.evaluate(() => ({title:document.querySelector('#challengeTitle')?.textContent,feedback:{text:document.querySelector('#challengeFeedback')?.textContent,display:document.querySelector('#challengeFeedback')?.style.display,className:document.querySelector('#challengeFeedback')?.className},choices:[...document.querySelectorAll('.answer-option')].map(b=>({text:b.innerText,selected:b.dataset.selected,disabled:b.disabled})),submit:{inline:document.querySelector('#submitAnswer')?.style.display,computed:getComputedStyle(document.querySelector('#submitAnswer')).display},next:{inline:document.querySelector('#nextChallenge')?.style.display,computed:getComputedStyle(document.querySelector('#nextChallenge')).display},storage:Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)?.slice(0,1000)])}))), 'PAGE_ERRORS', JSON.stringify(errors)); throw error; });
-    if (choice < correctChoices.length - 1) await page.locator('#nextChallenge').click();
+    await solveCurrentMultipleChoice();
+    if (challenge < 3) await page.locator('#nextChallenge').click();
   }
   await page.locator('#nextChallenge').click();
   await page.locator('#numericAnswer').waitFor({ state: 'visible', timeout: 10000 });
