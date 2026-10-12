@@ -429,7 +429,7 @@ const orders=[
 const inventory=[{sku:'MAT-001',name:'Acero A36',stock:4200,min:5000,consumption:700,lead:5},{sku:'INS-023',name:'Lubricante industrial',stock:320,min:300,consumption:22,lead:4},{sku:'MAT-118',name:'Tornillería M8',stock:1200,min:2000,consumption:180,lead:6},{sku:'CON-045',name:'Empaques',stock:8500,min:5000,consumption:650,lead:3},{sku:'LIM-007',name:'Detergente industrial',stock:150,min:500,consumption:40,lead:7}];
 const suppliers=[{name:'ACME Industrias',q:90,d:80,c:100,s:70,decision:'Evaluación abierta'},{name:'Proveedor del Norte',q:94,d:85,c:82,s:80,decision:'Aprobado'},{name:'LogiTrans',q:88,d:72,c:92,s:68,decision:'Plan de mejora'},{name:'FerreMax',q:91,d:88,c:84,s:86,decision:'Aprobado'},{name:'CleanPro',q:80,d:80,c:78,s:82,decision:'Seguimiento'}];
 const alerts=[{id:'TRK-330',title:'Retraso crítico de transporte',desc:'Tijuana → Planta Norte · ETA por confirmar',level:'red',action:'Coordinar',impact:'Riesgo de retraso en recepción',resolved:false},{id:'OC-7845',title:'Proveedor sin confirmar',desc:'ACME Industrias · vence en 12 horas',level:'amber',action:'Resolver',impact:'Riesgo de fecha promesa',resolved:false},{id:'INV-005',title:'Inventario bajo mínimo',desc:'5 SKU requieren revisión de punto de reorden',level:'amber',action:'Revisar',impact:'Riesgo de disponibilidad',resolved:false},{id:'FAC-221',title:'Factura en revisión',desc:'Flete con diferencia de $2,340 MXN',level:'blue',action:'Verificar',impact:'Control documental pendiente',resolved:false}];
-const makeFreshStudentState=(name='')=>({name,completed:{},attempts:{},errors:0,first:0,skipped:[],points:0,answers:{},actions:[],truck:72,orders:orders.map(o=>({...o})),alerts:alerts.map(a=>({...a})),supplierDecisions:{},supplierValidation:false,fuel:24.8,efficiency:3.8,distance:720,generated:false});
+const makeFreshStudentState=(name='')=>({name,completed:{},attempts:{},errors:0,first:0,skipped:[],points:0,answers:{},actions:[],truck:72,orders:orders.map(o=>({...o})),alerts:alerts.map(a=>({...a})),supplierDecisions:{},supplierValidation:false,supplierValidationCorrect:false,supplierScorecardValidated:false,supplierAppliedValidated:false,fuel:24.8,efficiency:3.8,distance:720,generated:false});
 let state=makeFreshStudentState();
 try{const saved=JSON.parse(localStorage.getItem(STORE)||'null');if(saved){state={...state,...saved,orders:saved.orders?.length?saved.orders:orders.map(o=>({...o})),alerts:saved.alerts?.length?saved.alerts:alerts.map(a=>({...a}))}}}catch(e){}
 // Shuffle concept choices once per load; keep the correct answer attached to its text.
@@ -460,13 +460,161 @@ function renderOrders(){const filter=$('#orderFilter')?.value||'all';const data=
 function updateOrder(id){const o=state.orders.find(x=>x.id===id);if(!o)return;const choices=['Pendiente','En tiempo','En tránsito','Con retraso','Completada'];const next=choices[(choices.indexOf(o.status)+1)%choices.length];showModal('Actualizar orden',`Cambiar ${id} de “${o.status}” a “${next}”. Esta acción afectará el resumen de órdenes.`, 'Aplicar cambio',()=>{const before=o.status;o.status=next;logAction('Estado de orden actualizado',`${id}: ${before} → ${next}`,next==='Con retraso'?'Aumenta el riesgo de entrega':'Estado operativo actualizado');renderOrders();renderDashboard();toast(`${id}: estado actualizado a ${next}.`);persist()})}
 function renderInventory(){const el=$('#inventoryList');if(!el)return;el.innerHTML=inventory.map(i=>{const pct=Math.min(100,i.stock/i.min*100);const low=i.stock<i.min;return `<div class="inventory-row"><div class="inventory-name">${esc(i.name)}<small>${esc(i.sku)} · mínimo ${i.min.toLocaleString('es-MX')}</small></div><div class="mini-bar"><span style="width:${pct}%;background:${low?'var(--amber)':'linear-gradient(90deg,var(--blue),var(--teal))'}"></span></div><span class="pill ${low?'amber':'green'}">${low?'Bajo':'OK'}</span></div>`}).join('')}
 function renderInventoryFull(){const el=$('#inventoryFullRows');if(!el)return;el.innerHTML=inventory.map(i=>`<tr><td class="order-id">${i.sku}</td><td>${i.name}</td><td>${i.stock.toLocaleString('es-MX')}</td><td>${i.min.toLocaleString('es-MX')}</td><td>${i.consumption}</td><td>${i.lead} días</td><td>${statusPill(i.stock<i.min?'Con retraso':'En tiempo')}</td></tr>`).join('')}
-function renderSuppliers(){const el=$('#supplierRows');if(!el)return;el.innerHTML=suppliers.map((s,i)=>{const score=Math.round(s.q*.4+s.d*.3+s.c*.2+s.s*.1);const decision=state.supplierDecisions[i]||s.decision;return `<tr><td><strong>${esc(s.name)}</strong></td><td>${s.q}</td><td>${s.d}</td><td>${s.c}</td><td>${s.s}</td><td><strong>${score}/100</strong></td><td><select class="btn btn-sm supplier-choice" data-supplier="${i}" aria-label="Decisión para ${esc(s.name)}"><option ${decision==='Evaluación abierta'?'selected':''}>Evaluación abierta</option><option ${decision==='Aprobado'?'selected':''}>Aprobado</option><option ${decision==='Plan de mejora'?'selected':''}>Plan de mejora</option><option ${decision==='Suspensión preventiva'?'selected':''}>Suspensión preventiva</option></select></td></tr>`}).join('');$$('.supplier-choice').forEach(sel=>sel.onchange=()=>{const i=+sel.dataset.supplier;state.supplierDecisions[i]=sel.value;state.supplierValidation=false;renderSupplierCostMission();logAction('Decisión de proveedor',`${suppliers[i].name}: ${sel.value}`,sel.value==='Suspensión preventiva'?'Se recomienda activar revisión de continuidad':'Decisión guardada en scorecard');renderSupplierDecisionLog();toast(`Decisión registrada para ${suppliers[i].name}.`);persist()});$('#supplierMetrics').innerHTML=[['Proveedores evaluados',suppliers.length,'periodo actual'],['Promedio ponderado',Math.round(suppliers.reduce((a,s)=>a+s.q*.4+s.d*.3+s.c*.2+s.s*.1,0)/suppliers.length)+'/100','score compuesto'],['Planes de mejora',suppliers.filter(s=>(state.supplierDecisions[suppliers.indexOf(s)]||s.decision)==='Plan de mejora').length,'con seguimiento'],['Suspensiones',Object.values(state.supplierDecisions).filter(x=>x==='Suspensión preventiva').length,'decisiones registradas']].map(x=>`<div class="metric-card"><span>${x[0]}</span><strong>${x[1]}</strong><small>${x[2]}</small></div>`).join('');$('#weightVisual').innerHTML=[['Calidad',40],['Entrega',30],['Costo',20],['Servicio',10]].map(([n,w])=>`<div class="session-line" style="margin-bottom:13px"><span>${n}</span><div class="mini-bar"><span style="width:${w*2.5}%;background:linear-gradient(90deg,var(--blue),var(--teal))"></span></div><span class="num">${w}%</span></div>`).join('');renderSupplierDecisionLog();renderSupplierCostMission()}
+const SUPPLIER_EXPECTED_DECISIONS=['Plan de mejora','Aprobado','Plan de mejora','Aprobado','Plan de mejora'];
+function supplierWeightedScore(s){return Math.round(s.q*.4+s.d*.3+s.c*.2+s.s*.1)}
+function supplierDecisionState(i,value){
+ if(!value||value==='Evaluación abierta')return {correct:false,label:'Pendiente',detail:'Selecciona una decisión.'};
+ const correct=value===SUPPLIER_EXPECTED_DECISIONS[i];
+ return {correct,label:correct?'Correcta':'Incorrecta',detail:correct?'Decisión alineada con los indicadores.':'Revisa los indicadores y el riesgo del proveedor.'};
+}
+function renderSuppliers(){
+ const el=$('#supplierRows');if(!el)return;
+ el.innerHTML=suppliers.map((s,i)=>{
+  const score=supplierWeightedScore(s),decision=state.supplierDecisions[i]||s.decision,feedback=supplierDecisionState(i,decision);
+  return `<tr><td><strong>${esc(s.name)}</strong></td><td>${s.q}</td><td>${s.d}</td><td>${s.c}</td><td>${s.s}</td><td><strong>${score}/100</strong></td><td><select class="btn btn-sm supplier-choice" data-supplier="${i}" aria-label="Decisión para ${esc(s.name)}"><option value="Evaluación abierta" ${decision==='Evaluación abierta'?'selected':''}>Evaluación abierta</option><option value="Aprobado" ${decision==='Aprobado'?'selected':''}>Aprobado</option><option value="Plan de mejora" ${decision==='Plan de mejora'?'selected':''}>Plan de mejora</option><option value="Suspensión preventiva" ${decision==='Suspensión preventiva'?'selected':''}>Suspensión preventiva</option></select><div id="supplierChoiceFeedback-${i}" class="hint ${feedback.correct?'positive':decision==='Evaluación abierta'?'':'negative'}" style="font-size:.75rem;margin-top:5px" role="status">${feedback.label} · ${feedback.detail}</div></td></tr>`;
+ }).join('');
+ $$('.supplier-choice').forEach(sel=>sel.onchange=()=>{
+  const i=Number(sel.dataset.supplier);state.supplierDecisions[i]=sel.value;
+  state.supplierScorecardValidated=false;state.supplierAppliedValidated=false;state.supplierValidation=false;state.supplierValidationCorrect=false;
+  const answer=$('#supplierSavingsAnswer');if(answer)answer.value='';
+  updateSupplierScorecardLive();renderSupplierCostMission();persist();
+  logAction('Decisión de scorecard actualizada',`${suppliers[i].name}: ${sel.value}`,supplierDecisionState(i,sel.value).correct?'Decisión correcta':'Requiere revisión');
+  toast(`${suppliers[i].name}: ${supplierDecisionState(i,sel.value).label.toLowerCase()}.`);
+ });
+ $('#weightVisual').innerHTML=[['Calidad',40],['Entrega',30],['Costo',20],['Servicio',10]].map(([n,w])=>`<div class="session-line" style="margin-bottom:13px"><span>${n}</span><div class="mini-bar"><span style="width:${w*2.5}%;background:linear-gradient(90deg,var(--blue),var(--teal))"></span></div><span class="num">${w}%</span></div>`).join('');
+ updateSupplierScorecardLive();renderSupplierDecisionLog();renderSupplierCostMission();
+}
+function updateSupplierScorecardLive(){
+ const selections=$$('.supplier-choice').map(sel=>({i:Number(sel.dataset.supplier),value:sel.value}));
+ const decisions=selections.length?selections.map(x=>x.value):suppliers.map((s,i)=>state.supplierDecisions[i]||s.decision);
+ selections.forEach(({i,value})=>{
+  const fb=$('#supplierChoiceFeedback-'+i),result=supplierDecisionState(i,value);
+  if(fb){fb.textContent=result.label+' · '+result.detail;fb.className='hint '+(result.correct?'positive':value==='Evaluación abierta'?'':'negative');}
+  state.supplierDecisions[i]=value;
+ });
+ const correctCount=decisions.filter((v,i)=>v===SUPPLIER_EXPECTED_DECISIONS[i]).length;
+ const points=correctCount*10;
+ const plans=decisions.filter(v=>v==='Plan de mejora').length;
+ const suspensions=decisions.filter(v=>v==='Suspensión preventiva').length;
+ const metrics=$('#supplierLiveMetrics');
+ if(metrics)metrics.innerHTML=[
+  ['Decisiones correctas',correctCount+'/5',correctCount===5?'Scorecard completo':'Retroalimentación por proveedor'],
+  ['Puntos acumulados',points+'/50', '10 puntos por decisión correcta'],
+  ['Planes de mejora',plans,'Según tus selecciones actuales'],
+  ['Suspensiones preventivas',suspensions,'Según tus selecciones actuales']
+ ].map(x=>`<div class="metric-card"><span>${x[0]}</span><strong>${x[1]}</strong><small>${x[2]}</small></div>`).join('');
+ if($('#supplierCorrectCount'))$('#supplierCorrectCount').textContent=correctCount+'/5 correctas';
+ if($('#supplierScorecardPoints'))$('#supplierScorecardPoints').textContent=points+' de 50 puntos';
+ if($('#supplierScorecardBar'))$('#supplierScorecardBar').style.width=(correctCount/5*100)+'%';
+ renderSupplierDecisionLog();
+ const status=$('#supplierValidationStatus');
+ if(status&&!state.supplierScorecardValidated){
+  status.textContent=correctCount===5?'Las cinco decisiones están correctas. Pulsa “Validar scorecard” para desbloquear el reto aplicado.':correctCount+' de 5 correctas. Revisa las filas marcadas y vuelve a validar.';
+  status.className='hint '+(correctCount===5?'positive':'');
+ }
+}
 function supplierMoney(value){return new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:2}).format(value)}
-function getSupplierQuoteValues(){const nQty=Number($('#quoteNorthQty')?.value),nPrice=Number($('#quoteNorthPrice')?.value),nFreight=Number($('#quoteNorthFreight')?.value),nInsurance=Number($('#quoteNorthInsurance')?.value),cQty=Number($('#quoteCenterQty')?.value),cPrice=Number($('#quoteCenterPrice')?.value),cFreight=Number($('#quoteCenterFreight')?.value);const vals=[nQty,nPrice,nFreight,nInsurance,cQty,cPrice,cFreight];if(vals.some(v=>!Number.isFinite(v)||v<0)||nQty<=0||cQty<=0)return null;return {north:nQty*nPrice+nFreight+nInsurance,center:cQty*cPrice+cFreight,nQty,nPrice,nFreight,nInsurance,cQty,cPrice,cFreight};}
-function validateSupplierDecisions(){const expected=['Plan de mejora','Aprobado','Plan de mejora','Aprobado','Plan de mejora'];const allSelected=suppliers.every((_,i)=>!!state.supplierDecisions[i]);const decisionsCorrect=allSelected&&expected.every((v,i)=>state.supplierDecisions[i]===v);const chosen=$('#chosenQuote')?.value||'';const quote=getSupplierQuoteValues();const validInputs=!!quote;const best=quote?(quote.center<quote.north?'Centro':quote.north<quote.center?'Norte':'Empate'):'';const choiceCorrect=!!chosen&&!!best&&chosen===best;const correct=decisionsCorrect&&choiceCorrect&&validInputs;state.supplierValidation=true;state.supplierValidationCorrect=correct;persist();renderSupplierCostMission();const status=$('#supplierValidationStatus');if(!validInputs){status.textContent='Revisa los valores: las cantidades deben ser mayores que cero y los costos no pueden ser negativos.';status.className='hint negative';toast('Hay valores de cotización inválidos.');return;}if(!allSelected){status.textContent='Incorrecto: selecciona una decisión para los cinco proveedores y vuelve a validar.';status.className='hint negative';}else if(!decisionsCorrect){status.textContent='Hay decisiones incorrectas en el scorecard. Revisa la retroalimentación y vuelve a validar.';status.className='hint negative';}else if(!chosen){status.textContent='El scorecard está correcto, pero falta elegir una cotización.';status.className='hint negative';}else if(!choiceCorrect){status.textContent='Las decisiones del scorecard están correctas, pero la cotización elegida no es la de menor costo total.';status.className='hint negative';}else{status.textContent='¡Correcto! Las decisiones y la selección de cotización son correctas.';status.className='hint positive';}const result=$('#supplierCostResult');if(result)result.classList.remove('hidden');$('#quoteNorthTotal').textContent=supplierMoney(quote.north);$('#quoteCenterTotal').textContent=supplierMoney(quote.center);$('#quoteNorthResult').textContent=supplierMoney(quote.north);$('#quoteCenterResult').textContent=supplierMoney(quote.center);$('#quoteNorthFormula').textContent=quote.nQty+' × '+supplierMoney(quote.nPrice)+' + '+supplierMoney(quote.nFreight)+' de flete + '+supplierMoney(quote.nInsurance)+' de seguro';$('#quoteCenterFormula').textContent=quote.cQty+' × '+supplierMoney(quote.cPrice)+' + '+supplierMoney(quote.cFreight)+' de flete; seguro incluido';const delta=Math.abs(quote.north-quote.center);$('#quoteDeltaLabel').textContent=quote.north===quote.center?'Diferencia entre cotizaciones':'Ahorro potencial de la opción más económica';$('#quoteDeltaResult').textContent=supplierMoney(delta);$('#quoteDeltaFormula').textContent=quote.north===quote.center?'Ambas opciones cuestan lo mismo':(quote.center<quote.north?'Centro cuesta menos que Norte':'Norte cuesta menos que Centro');const decisionFeedback=$('#supplierDecisionFeedback');decisionFeedback.innerHTML=(correct?'¡Correcto!':'Validación con observaciones:')+' '+(decisionsCorrect?'Las cinco decisiones del scorecard son correctas.':'Revisa las decisiones del scorecard.')+' '+(choiceCorrect?'Elegiste la cotización de menor costo total.':chosen?'La opción seleccionada no es la más económica.':'Aún no seleccionaste una cotización.');$('#supplierMissionAnswer').textContent='Respuesta numérica: '+Math.round(delta*100)/100+' MXN de diferencia entre las cotizaciones. '+(best==='Centro'?'Centro es la opción de menor costo total.':best==='Norte'?'Norte es la opción de menor costo total.':'Ambas cotizaciones tienen el mismo costo total.');if(correct){logAction('Reto de costo validado','Decisiones correctas y cotización de menor costo seleccionada','Diferencia de costo: '+supplierMoney(delta));toast('¡Correcto! Los costos y el ahorro se actualizaron.')}else{toast('Validación realizada. Revisa la retroalimentación del módulo.');}}
-function renderSupplierCostMission(){const result=$('#supplierCostResult'),status=$('#supplierValidationStatus');if(!result||!status)return;result.classList.toggle('hidden',!state.supplierValidation);if(!state.supplierValidation){status.textContent='Completa las decisiones y selecciona una cotización para validar.';status.className='hint';}}
-
-function renderSupplierDecisionLog(){const el=$('#supplierDecisionLog');if(el)el.innerHTML=suppliers.map((s,i)=>`<div class="session-line" style="margin-bottom:12px"><span>${esc(s.name)}</span><div class="mini-bar"><span style="width:${Math.round(s.q*.4+s.d*.3+s.c*.2+s.s*.1)}%"></span></div><span class="num">${esc(state.supplierDecisions[i]||s.decision)}</span></div>`).join('')}
+function getSupplierQuoteValues(){
+ const nQty=Number($('#quoteNorthQty')?.value),nPrice=Number($('#quoteNorthPrice')?.value),nFreight=Number($('#quoteNorthFreight')?.value),nInsurance=Number($('#quoteNorthInsurance')?.value),cQty=Number($('#quoteCenterQty')?.value),cPrice=Number($('#quoteCenterPrice')?.value),cFreight=Number($('#quoteCenterFreight')?.value);
+ const vals=[nQty,nPrice,nFreight,nInsurance,cQty,cPrice,cFreight];
+ if(vals.some(v=>!Number.isFinite(v)||v<0)||nQty<=0||cQty<=0)return null;
+ return {north:nQty*nPrice+nFreight+nInsurance,center:cQty*cPrice+cFreight,nQty,nPrice,nFreight,nInsurance,cQty,cPrice,cFreight};
+}
+function validateSupplierDecisions(){
+ const selects=$$('.supplier-choice');
+ selects.forEach(sel=>state.supplierDecisions[Number(sel.dataset.supplier)]=sel.value);
+ const allSelected=selects.length===suppliers.length&&selects.every(sel=>sel.value&&sel.value!=='Evaluación abierta');
+ const correctCount=selects.filter(sel=>sel.value===SUPPLIER_EXPECTED_DECISIONS[Number(sel.dataset.supplier)]).length;
+ const decisionsCorrect=allSelected&&correctCount===suppliers.length;
+ state.supplierScorecardValidated=decisionsCorrect;
+ state.supplierAppliedValidated=false;
+ state.supplierValidation=decisionsCorrect;
+ state.supplierValidationCorrect=decisionsCorrect;
+ const status=$('#supplierValidationStatus');
+ if(!allSelected){
+  if(status){status.textContent='Faltan decisiones: selecciona una opción distinta de “Evaluación abierta” para los cinco proveedores.';status.className='hint negative';}
+  toast('Completa las cinco decisiones antes de validar.');renderSupplierCostMission();persist();return;
+ }
+ if(!decisionsCorrect){
+  if(status){status.textContent='Scorecard no aprobado: '+correctCount+'/5 correctas. Las filas indican cuáles decisiones debes revisar.';status.className='hint negative';}
+  toast('Scorecard incorrecto. Corrige las decisiones marcadas.');renderSupplierCostMission();persist();return;
+ }
+ if(status){status.textContent='¡Scorecard aprobado! 5/5 decisiones correctas · 50/50 puntos. Se desbloqueó el reto aplicado.';status.className='hint positive';}
+ renderSupplierCostMission();updateSupplierQuoteLive();
+ logAction('Scorecard de proveedores aprobado','5 de 5 decisiones correctas','50/50 puntos; reto aplicado desbloqueado');
+ persist();toast('¡Scorecard aprobado! Se desbloqueó la comparación de costos.');
+}
+function updateSupplierQuoteLive(){
+ if(!state.supplierScorecardValidated)return;
+ const quote=getSupplierQuoteValues();
+ const ids=['quoteNorthTotal','quoteCenterTotal','quoteNorthResult','quoteCenterResult','quoteDeltaResult','quoteNorthFormula','quoteCenterFormula','quoteDeltaFormula'];
+ if(!quote){
+  ['quoteNorthTotal','quoteNorthResult','quoteCenterTotal','quoteCenterResult','quoteDeltaResult'].forEach(id=>{if($('#'+id))$('#'+id).textContent='Revisar datos';});
+  if($('#supplierAppliedFeedback')){$('#supplierAppliedFeedback').textContent='Revisa los valores: cantidades mayores que cero y costos no negativos.';$('#supplierAppliedFeedback').className='hint negative';}
+  return;
+ }
+ const delta=Math.round(Math.abs(quote.north-quote.center)*100)/100;
+ $('#quoteNorthTotal').textContent=supplierMoney(quote.north);$('#quoteCenterTotal').textContent=supplierMoney(quote.center);
+ $('#quoteNorthResult').textContent=supplierMoney(quote.north);$('#quoteCenterResult').textContent=supplierMoney(quote.center);
+ $('#quoteNorthFormula').textContent=quote.nQty+' × '+supplierMoney(quote.nPrice)+' + '+supplierMoney(quote.nFreight)+' de flete + '+supplierMoney(quote.nInsurance)+' de seguro';
+ $('#quoteCenterFormula').textContent=quote.cQty+' × '+supplierMoney(quote.cPrice)+' + '+supplierMoney(quote.cFreight)+' de flete; seguro incluido';
+ $('#quoteDeltaResult').textContent=supplierMoney(delta);
+ const best=quote.center<quote.north?'Centro':quote.north<quote.center?'Norte':'Empate';
+ $('#quoteDeltaFormula').textContent=best==='Empate'?'Ambas opciones tienen el mismo costo':best+' es la opción más económica';
+ updateSupplierQuoteChoiceFeedback(quote,best);
+}
+function updateSupplierQuoteChoiceFeedback(quote=getSupplierQuoteValues(),best){
+ const el=$('#supplierQuoteChoiceFeedback');if(!el||!state.supplierScorecardValidated)return;
+ if(!quote){el.textContent='Revisa los importes de las cotizaciones.';el.className='hint negative';return;}
+ best=best||(quote.center<quote.north?'Centro':quote.north<quote.center?'Norte':'Empate');
+ const chosen=$('#chosenQuote')?.value||'';
+ if(!chosen){el.textContent='Selecciona una cotización. La opción de menor costo es '+(best==='Empate'?'un empate':best)+'.';el.className='hint';return;}
+ const correct=chosen===best;
+ el.textContent=correct?'Correcto: elegiste la cotización de menor costo total.':'Todavía no. Compara los costos totales actualizados y vuelve a elegir.';
+ el.className='hint '+(correct?'positive':'negative');
+}
+function validateSupplierApplied(){
+ if(!state.supplierScorecardValidated){toast('Primero debes aprobar el scorecard.');return;}
+ const quote=getSupplierQuoteValues();
+ if(!quote){$('#supplierAppliedFeedback').textContent='Revisa los valores de las cotizaciones.';$('#supplierAppliedFeedback').className='hint negative';return;}
+ const best=quote.center<quote.north?'Centro':quote.north<quote.center?'Norte':'Empate';
+ const chosen=$('#chosenQuote')?.value||'';
+ const raw=$('#supplierSavingsAnswer')?.value?.trim()||'';
+ if(!chosen||!raw){$('#supplierAppliedFeedback').textContent='Selecciona el proveedor y escribe el ahorro calculado antes de validar.';$('#supplierAppliedFeedback').className='hint negative';toast('Completa las dos partes del reto aplicado.');return;}
+ const entered=Number(raw),delta=Math.round(Math.abs(quote.north-quote.center)*100)/100;
+ const choiceCorrect=chosen===best,amountCorrect=Number.isFinite(entered)&&Math.abs(entered-delta)<0.011;
+ if(!choiceCorrect||!amountCorrect){
+  state.supplierAppliedValidated=false;$('#supplierCostResult').classList.add('hidden');
+  const parts=[];if(!choiceCorrect)parts.push('La selección de proveedor es incorrecta: vuelve a comparar el costo total.');if(!amountCorrect)parts.push('El ahorro capturado no coincide con la diferencia entre los costos totales.');
+  $('#supplierAppliedFeedback').textContent='Reto aplicado incorrecto. '+parts.join(' ');$('#supplierAppliedFeedback').className='hint negative';
+  persist();toast('Revisa la selección y el cálculo del ahorro.');return;
+ }
+ state.supplierAppliedValidated=true;
+ $('#supplierCostResult').classList.remove('hidden');
+ $('#supplierAppliedFeedback').textContent='¡Reto aplicado correcto! Proveedor elegido y ahorro verificados.';$('#supplierAppliedFeedback').className='hint positive';
+ $('#supplierAppliedStatus').textContent='VALIDADO';$('#supplierAppliedStatus').className='status green';
+ $('#supplierDecisionFeedback').textContent='Correcto: '+(best==='Centro'?'Proveedor Centro':best==='Norte'?'Proveedor Norte':'ambos proveedores')+' ofrece el menor costo total para estas cotizaciones.';
+ $('#supplierMissionAnswer').textContent='Número de misión desbloqueado: '+delta+' MXN';
+ logAction('Reto aplicado de proveedores aprobado','Selección y ahorro correctos','Número de misión desbloqueado: '+delta+' MXN');
+ persist();toast('¡Correcto! Número de misión desbloqueado: '+delta+' MXN.');
+}
+function renderSupplierCostMission(){
+ const locked=$('#supplierAppliedLocked'),stage=$('#supplierAppliedStage'),status=$('#supplierAppliedStatus');
+ const unlocked=!!state.supplierScorecardValidated;
+ if(locked)locked.classList.toggle('hidden',unlocked);
+ if(stage)stage.classList.toggle('hidden',!unlocked);
+ if(status){status.textContent=unlocked?(state.supplierAppliedValidated?'VALIDADO':'FASE 2 DESBLOQUEADA'):'BLOQUEADO';status.className=state.supplierAppliedValidated?'status green':'status';}
+ if(!unlocked){if($('#supplierCostResult'))$('#supplierCostResult').classList.add('hidden');return;}
+ updateSupplierQuoteLive();
+ if($('#supplierCostResult'))$('#supplierCostResult').classList.toggle('hidden',!state.supplierAppliedValidated);
+}
+function renderSupplierDecisionLog(){
+ const el=$('#supplierDecisionLog');if(!el)return;
+ el.innerHTML=suppliers.map((s,i)=>{
+  const decision=state.supplierDecisions[i]||s.decision,feedback=supplierDecisionState(i,decision),score=supplierWeightedScore(s);
+  return `<div class="session-line" style="margin-bottom:12px;align-items:center"><span>${esc(s.name)}<small style="display:block">${score}/100 · ${esc(decision)}</small></span><div class="mini-bar"><span style="width:${score}%;background:${feedback.correct?'linear-gradient(90deg,var(--blue),var(--teal))':'var(--amber)'}"></span></div><span class="pill ${feedback.correct?'green':decision==='Evaluación abierta'?'amber':'red'}">${feedback.label}</span></div>`;
+ }).join('');
+}
 function renderSupplierMini(){const el=$('#supplierMini');if(!el)return;el.innerHTML=suppliers.slice(0,4).map(s=>{const score=Math.round(s.q*.4+s.d*.3+s.c*.2+s.s*.1);return `<div class="supplier-row"><div class="supplier-logo">${s.name.split(' ').map(x=>x[0]).join('').slice(0,2)}</div><div class="supplier-main"><div class="supplier-top"><span>${esc(s.name)}</span><span>${score}/100</span></div><div class="mini-bar"><span style="width:${score}%"></span></div></div><span class="pill ${score>=85?'green':score>=75?'amber':'red'}">${score>=85?'A':score>=75?'B':'C'}</span></div>`}).join('')}
 function renderChart(target,mode='activity',limit=7){const el=$(target);if(!el)return;const w=520,h=190,left=30,right=8,top=12,bottom=24,plotW=w-left-right,plotH=h-top-bottom;let series;if(mode==='kpi'){series=[{name:'OTD',color:'#3b9eff',data:[84,87,86,91,89,93,90]},{name:'OTIF',color:'#35d0a0',data:[75,79,78,82,80,84,80]}]}else{series=[{name:'Órdenes',color:'#3b9eff',data:[11,14,12,17,13,16,15]},{name:'Entregas',color:'#35d0a0',data:[8,10,9,12,11,13,12]},{name:'Incidencias',color:'#ffbd59',data:[3,4,2,5,3,4,2]}]};const max=mode==='kpi'?100:20;let svg=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Gráfica ${mode==='kpi'?'OTD y OTIF':'actividad logística'}">`;for(let i=0;i<=4;i++){let y=top+plotH*i/4;svg+=`<line x1="${left}" y1="${y}" x2="${w-right}" y2="${y}" stroke="#20364b" stroke-width="1"/><text x="${left-7}" y="${y+3}" text-anchor="end" fill="#61788d" font-size="9">${Math.round(max*(1-i/4))}${mode==='kpi'?'%':''}</text>`}const labels=['Abr','May','Jun','Jul','Ago','Sep','Oct'].slice(7-limit);series.forEach(s=>{const data=s.data.slice(7-limit);const points=data.map((v,i)=>`${left+i*plotW/(data.length-1)},${top+plotH*(1-v/max)}`).join(' ');svg+=`<polyline points="${points}" fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;data.forEach((v,i)=>{let x=left+i*plotW/(data.length-1),y=top+plotH*(1-v/max);svg+=`<circle cx="${x}" cy="${y}" r="3" fill="${s.color}" stroke="#0d1b2b" stroke-width="1.5"/>`})});labels.forEach((l,i)=>{if(i<limit)svg+=`<text x="${left+i*plotW/(limit-1)}" y="${h-5}" text-anchor="middle" fill="#718ba0" font-size="9">${l}</text>`});svg+='</svg>';el.innerHTML=svg}
 function renderDonut(){const el=$('#shipmentDonut');if(!el)return;const vals=[12,14,4,2],colors=['#3b9eff','#35d0a0','#ffbd59','#ff6878'],sum=vals.reduce((a,b)=>a+b,0);let start=0,parts='';vals.forEach((v,i)=>{const end=start+v/sum*100;parts+=`${colors[i]} ${start}% ${end}%${i<vals.length-1?', ':''}`;start=end});el.innerHTML=`<div style="width:130px;height:130px;border-radius:50%;background:conic-gradient(${parts});display:grid;place-items:center;position:relative"><div style="width:88px;height:88px;border-radius:50%;background:#0d1b2b;display:grid;place-content:center;text-align:center"><strong style="font:800 23px Manrope,Arial,sans-serif">${sum}</strong><small style="font-size:9px;color:var(--muted)">embarques</small></div></div>`;$('#shipmentLegend').innerHTML=[['En tránsito',12,colors[0]],['Entregado',14,colors[1]],['Con retraso',4,colors[2]],['Incidencia',2,colors[3]]].map(([n,v,c])=>`<div style="display:flex;align-items:center;gap:7px;font-size:10px"><i style="width:7px;height:7px;border-radius:2px;background:${c}"></i><span style="color:var(--muted);flex:1">${n}</span><strong>${v}</strong><span style="color:var(--muted)">${Math.round(v/sum*100)}%</span></div>`).join('')}
@@ -707,6 +855,10 @@ $('#simulateDelay').onclick=()=>{const id='SIM-'+String(Math.floor(100+Math.rand
 $('#newOrder').onclick=()=>{const id='OC-'+(7851+state.orders.length);showModal('Crear orden simulada',`Se añadirá la orden ${id} con estado “Pendiente” para practicar seguimiento y autorización.`, 'Crear orden',()=>{state.orders.push({id,supplier:'Proveedor por asignar',material:'Material pendiente de especificación',qty:'Por definir',date:'20 oct 2026',status:'Pendiente'});logAction('Orden creada',`${id} · orden de práctica`,'Aumenta el volumen de órdenes activas');renderOrders();renderDashboard();toast(`${id} creada en el ERP simulado.`);persist()})};$('#orderFilter').onchange=renderOrders;$('#chartRange').onchange=()=>renderChart('#activityChart','activity',+$('#chartRange').value);$('#refreshDashboard').onclick=()=>{renderDashboard();toast('Paneles actualizados con el estado actual de la simulación.');logAction('Dashboard actualizado','Refresco manual del tablero','Se recalcularon los indicadores visibles')};
 function applyRoute(){const fuel=Number($('#fuelPrice').value),eff=Number($('#truckEfficiency').value),dist=Number($('#routeDistance').value);if(fuel<=0||eff<=0||dist<=0){toast('Introduce valores mayores que cero.');return}state.fuel=fuel;state.efficiency=eff;state.distance=dist;const cost=dist/eff*fuel;$('#fuelEstimate').textContent=cost.toLocaleString('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:2});logAction('Parámetros de ruta aplicados',`${dist} km · ${eff} km/L · combustible $${fuel}/L`,`Consumo estimado ${Math.round(dist/eff)} L; costo $${Math.round(cost).toLocaleString('es-MX')}`);persist();toast('Parámetros aplicados. El costo estimado se actualizó.')}$('#updateRouteParams').onclick=applyRoute;
 $('#calculateKpis').onclick=()=>{const n=+$('#calcScheduled').value,t=+$('#calcOnTime').value,c=+$('#calcComplete').value,f=+$('#calcOnTimeFull').value;const out=$('#kpiCalcResult');out.style.display='block';if(n<=0||t>n||c>n||f>n||f>t||f>c||Math.min(t,c,f)<0){out.className='feedback error';out.textContent='Revisa los datos: los conteos deben ser coherentes, y las entregas OTIF no pueden superar las entregas puntuales ni las completas.';return}const otd=t/n*100,otif=f/n*100;out.className='feedback';out.innerHTML=`<strong>OTD: ${otd.toFixed(1)}%</strong><br><strong>OTIF: ${otif.toFixed(1)}%</strong><br><br>OTD mide puntualidad. OTIF mide entregas que llegaron a tiempo y completas. La brecha es de ${(otd-otif).toFixed(1)} puntos porcentuales.`;$('#kpiOtd').textContent=`${Math.round(otd)}%`;$('#scheduledCount').textContent=n;$('#onTimeCount').textContent=t;$('#completeCount').textContent=c;$('#otifCount').textContent=f;logAction('Indicadores calculados',`${n} programadas; ${t} puntuales; ${f} OTIF`,`OTD ${otd.toFixed(1)}%; OTIF ${otif.toFixed(1)}%`);persist();toast('Indicadores calculados y añadidos a la bitácora.')};
+['quoteNorthQty','quoteNorthPrice','quoteNorthFreight','quoteNorthInsurance','quoteCenterQty','quoteCenterPrice','quoteCenterFreight'].forEach(id=>$('#'+id)?.addEventListener('input',()=>{if(!state.supplierScorecardValidated)return;state.supplierAppliedValidated=false;if($('#supplierSavingsAnswer'))$('#supplierSavingsAnswer').value='';if($('#supplierCostResult'))$('#supplierCostResult').classList.add('hidden');if($('#supplierAppliedStatus')){$('#supplierAppliedStatus').textContent='FASE 2 DESBLOQUEADA';$('#supplierAppliedStatus').className='status'}updateSupplierQuoteLive();persist()}));
+$('#chosenQuote')?.addEventListener('change',()=>{state.supplierAppliedValidated=false;if($('#supplierCostResult'))$('#supplierCostResult').classList.add('hidden');if($('#supplierAppliedStatus')){$('#supplierAppliedStatus').textContent='FASE 2 DESBLOQUEADA';$('#supplierAppliedStatus').className='status'}updateSupplierQuoteChoiceFeedback();persist()});
+$('#supplierSavingsAnswer')?.addEventListener('input',()=>{state.supplierAppliedValidated=false;if($('#supplierCostResult'))$('#supplierCostResult').classList.add('hidden');if($('#supplierAppliedStatus')){$('#supplierAppliedStatus').textContent='FASE 2 DESBLOQUEADA';$('#supplierAppliedStatus').className='status'}persist()});
+$('#validateSupplierApplied')?.addEventListener('click',validateSupplierApplied);
 $('#exportSuppliers').onclick=()=>downloadText('nexus-scorecard-proveedores.csv','Proveedor,Calidad,Entrega,Costo,Servicio,Puntuacion,Decision\n'+suppliers.map((s,i)=>`${s.name},${s.q},${s.d},${s.c},${s.s},${Math.round(s.q*.4+s.d*.3+s.c*.2+s.s*.1)},${state.supplierDecisions[i]||s.decision}`).join('\n'),'text/csv;charset=utf-8');
 function renderReportSummary(){const done=Object.keys(state.completed).length;$('#statSolved')&&($('#statSolved').textContent=`${done}/24`);$('#statFirst')&&($('#statFirst').textContent=state.first);$('#statErrors')&&($('#statErrors').textContent=state.errors);$('#statAttempts')&&($('#statAttempts').textContent=Object.values(state.attempts).reduce((a,x)=>a+x.count,0));}
 function renderReport(){renderReportSummary();const name=state.name||'Participante sin registrar';$('#reportName').textContent=name;$('#reportAvatar').textContent=name.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase()||'OP';$('#reportMeta').textContent=`Expediente académico · Generado ${new Date().toLocaleString('es-MX')}`;const done=Object.keys(state.completed).length;$('#reportSolved').textContent=`${done}/24`;$('#reportPoints').textContent=state.points;$('#reportErrors').textContent=state.errors;$('#reportSkipped').textContent=state.skipped.length;$('#reportStatus').textContent=done===24?'COMPLETADO':'EN CURSO';$('#reportIdentityBar').style.width=state.name?'100%':'0%';$('#reportIdentityState').textContent=state.name?'100%':'0%';$('#reportMissionBar').style.width=`${done/24*100}%`;$('#reportMissionState').textContent=`${Math.round(done/24*100)}%`;$('#reportFileBar').style.width=state.generated?'100%':'0%';$('#reportFileState').textContent=state.generated?'Listo':'Pend.';const rows=[];sessions.forEach((s,si)=>s.questions.forEach((q,qi)=>{const a=state.answers[q.id];if(a)rows.push(`<tr><td>${si+1}</td><td>${esc(q.title)}</td><td style="white-space:normal;min-width:200px">${esc(a.value)}</td><td>${a.skipped?'<span class="pill amber">Omitido</span>':a.correct?'<span class="pill green">Correcta</span>':'<span class="pill red">Incorrecta</span>'}</td><td>${a.tries||0}</td></tr>`)}));$('#reportAnswerRows').innerHTML=rows.join('')||'<tr><td colspan="5" style="color:var(--muted)">Las respuestas aparecerán aquí conforme completes los retos.</td></tr>';renderSessionProgress()}
