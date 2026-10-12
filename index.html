@@ -633,8 +633,8 @@ function submitChallenge(){
    const textIndex=opts.findIndex(o=>String(typeof o==='string'?o:(o?.text??o?.label??'')).toLocaleLowerCase('es-MX').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim()===target);
    picked=textIndex>=0?textIndex:numericIndex>=0&&numericIndex<opts.length?numericIndex:letterIndex>=0&&letterIndex<opts.length?letterIndex:undefined;
   }
-  if(picked===undefined||!Number.isInteger(Number(picked))){toast('Selecciona una opción de respuesta antes de validar.');$('#challengeInputs').querySelector('.answer-option')?.focus();return}
-  picked=Number(picked);
+  if(opts.length&&(picked===undefined||!Number.isInteger(Number(picked)))){toast('Selecciona una opción de respuesta antes de validar.');$('#challengeInputs').querySelector('.answer-option')?.focus();return}
+  if(opts.length)picked=Number(picked);
   if(opts.length){
    const o=opts[picked];if(o===undefined){toast('Selecciona una opción válida.');return}
    const label=typeof o==='string'?o:(o?.text??o?.label??String(o));
