@@ -1214,14 +1214,11 @@ function enterAsParticipant(rawName){
   $('#participantDisplay').textContent=name;
   const player=$('#playerDisplay');if(player)player.textContent=name;
 
-  // Abrir la bienvenida en el mismo ciclo del acceso; no depender de un temporizador.
-  try {
-    renderGuidedStart(0);
-  } catch (e) {
-    console.error('NEXUS: no se pudo abrir la bienvenida.', e);
-    const err = $('#loginError');
-    if (err) { err.hidden = false; err.textContent = 'Acceso correcto, pero no se pudo abrir el tutorial. Recarga e inténtalo de nuevo.'; }
-  }
+  // Abrir el tutorial después de la inicialización del módulo (guidedStage usa let).
+  window.setTimeout(()=>{
+    try { renderGuidedStart(0); }
+    catch (e) { console.error('NEXUS: no se pudo abrir la bienvenida.', e); }
+  }, 0);
   try{
     persist();
     renderIdentity();
