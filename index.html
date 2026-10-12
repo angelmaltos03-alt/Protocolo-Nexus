@@ -575,11 +575,16 @@ function renderAnswerEntry(q){
 function renderChallenge(){
  current.choice=undefined;const s=sessions[current.session],q=s.questions[current.index];if(!q)return;
  current.tries=state.attempts[q.id]?.count||0;current.answered=!!state.completed[q.id];
- // Render the response control first, so a failure in an unrelated dashboard widget cannot leave the learner without a place to answer.
+ // Make the response field and actions available before rendering secondary widgets.
  renderAnswerEntry(q);
+ $('#submitAnswer').style.display=current.answered?'none':'inline-flex';
+ $('#nextChallenge').style.display=current.answered?'inline-flex':'none';
+ $('#skipChallenge').style.display=current.tries>=2&&!current.answered?'inline-flex':'none';
+ $('#backToMissions').style.display='inline-flex';
  $('#challengeEyebrow').textContent=`SESIÓN ${current.session+1} · RETO ${current.index+1} DE 8`;
  $('#challengeTitle').textContent=q.title;$('#challengePrompt').textContent=q.prompt;$('#challengeScenario').textContent=q.scenario;
- renderMissionDashboard(q);renderMissionReference(q);
+ try{renderMissionDashboard(q)}catch(dashboardError){console.error('NEXUS dashboard widget failed',dashboardError);$('#missionDashboard').innerHTML='<div class="mission-dashboard-head"><div><span class="mission-dashboard-kicker">NEXUS LIVE · PANEL OPERATIVO</span><h3>Panel de consulta operativa</h3><p>Continúa con la información del escenario.</p></div></div>'}
+ try{renderMissionReference(q)}catch(referenceError){console.error('NEXUS module guide failed',referenceError);$('#missionReference').innerHTML='<div class="mission-reference-copy"><span class="mission-reference-eyebrow">PASO 1 · QUÉ HACER EN EL MÓDULO</span><strong class="mission-reference-title">Consulta el módulo indicado</strong><span class="mission-reference-task">Revisa los datos del módulo, regresa a esta misión y escribe o selecciona tu respuesta en el formulario que aparece debajo.</span></div>'}
  $('#briefingImage').src=q.image||s.image;$('#briefingImage').alt=String(q.type||'').toLowerCase().includes('cálculo')?'Contexto visual del reto de cálculo':s.title;
  $('#challengeFeedback').style.display='none';$('#challengeFeedback').className='feedback';
  $('#submitAnswer').style.display=current.answered?'none':'inline-flex';$('#nextChallenge').style.display=current.answered?'inline-flex':'none';setAdvanceButtonLabel();
