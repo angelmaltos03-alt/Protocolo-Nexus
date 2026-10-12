@@ -5,7 +5,9 @@ const url = base + '?verify=' + Date.now();
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
 const errors = [];
+const browserConsoleErrors = [];
 page.on('pageerror', error => errors.push(error.stack || error.message));
+page.on('console', msg => { if (msg.type() === 'error') browserConsoleErrors.push(msg.text()); });
 try {
   await page.goto(url, { waitUntil: 'networkidle', timeout: 90000 });
   await page.evaluate(() => localStorage.clear());
@@ -21,7 +23,41 @@ try {
   }));
   if (login.locked || !login.hidden || login.name !== 'Juan Pérez') throw new Error('Login failed: ' + JSON.stringify(login));
 
-  await page.locator('#guidedStart.is-open').waitFor({ state: 'visible', timeout: 15000 });
+  // Diagnostic snapshot: report the published DOM/CSS and browser errors instead of only timing out.
+  await page.waitForTimeout(350);
+  const guidedDiagnostic = await page.evaluate(() => {
+    const root = document.querySelector('#guidedStart');
+    const style = root ? getComputedStyle(root) : null;
+    return {
+      url: location.href,
+      loginGateHidden: document.querySelector('#loginGate')?.hidden,
+      loginLocked: document.documentElement.classList.contains('login-locked') || document.body.classList.contains('login-locked'),
+      exists: !!root,
+      className: root?.className,
+      hiddenAttribute: root?.hasAttribute('hidden'),
+      inlineDisplay: root?.style.display,
+      inlineVisibility: root?.style.visibility,
+      display: style?.display,
+      visibility: style?.visibility,
+      opacity: style?.opacity,
+      zIndex: style?.zIndex,
+      ariaHidden: root?.getAttribute('aria-hidden'),
+      stage: root?.getAttribute('data-guided-stage'),
+      title: document.querySelector('#guidedTitle')?.textContent,
+      loginError: document.querySelector('#loginError')?.textContent,
+      loginErrorHidden: document.querySelector('#loginError')?.hidden
+    };
+  });
+  if (!guidedDiagnostic.className?.split(/\\s+/).includes('is-open') ||
+      guidedDiagnostic.display !== 'flex' ||
+      guidedDiagnostic.visibility !== 'visible' ||
+      guidedDiagnostic.loginLocked ||
+      !guidedDiagnostic.loginGateHidden) {
+    throw new Error('Onboarding failed after login. DOM/CSS snapshot: ' + JSON.stringify(guidedDiagnostic) +
+      ' | page errors: ' + JSON.stringify(errors) +
+      ' | console errors: ' + JSON.stringify(browserConsoleErrors));
+  }
+  await page.locator('#guidedStart.is-open').waitFor({ state: 'visible', timeout: 5000 });
   const welcome = await page.locator('#guidedTitle').innerText();
   if (!welcome.includes('Bienvenido, agente')) throw new Error('Welcome modal missing: ' + welcome);
   if (!(await page.locator('#guidedStart').evaluate(el => getComputedStyle(el).display === 'flex' && getComputedStyle(el).visibility === 'visible'))) {
@@ -169,9 +205,8 @@ try {
     throw new Error('Cost totals did not update or result did not relock after changing quote: ' + JSON.stringify(changedQuote));
   }
   await page.locator('#quoteCenterPrice').fill('192');
-  if (errors.length) throw new Error('Browser JavaScript errors: ' + errors.join(' | '));
-  if (errors.length) throw new Error('Browser JavaScript errors: ' + errors.join(' | '));
-  console.log('NEXUS_LOGIN_ANSWER_SUPPLIER_STAGES_PASS', JSON.stringify({url, ...result, scorecardLive, scorecardUnlocked, quoteStart, applied, changedQuote, pageErrors: errors}));
+  if (errors.length || browserConsoleErrors.length) throw new Error('Browser errors: ' + JSON.stringify({pageErrors: errors, consoleErrors: browserConsoleErrors}));
+  console.log('NEXUS_LOGIN_ANSWER_SUPPLIER_STAGES_PASS', JSON.stringify({url, ...result, scorecardLive, scorecardUnlocked, quoteStart, applied, changedQuote, pageErrors: errors, browserConsoleErrors}));
 } finally {
   await browser.close();
 }
