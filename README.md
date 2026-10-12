@@ -1,41 +1,34 @@
-# PROTOCOLO NEXUS — Control Tower de Compras y Logística
+# NEXUS Control Tower — Compras y Logística
 
-Aplicación académica HTML5 de una sola página para GitHub Pages. Mantiene las tres sesiones y evidencias del programa, con una historia de operaciones de la empresa ficticia Cadena Cobalto y un dashboard corporativo de compras, transporte y proveedores.
+Simulador académico interactivo de compras y logística, con una interfaz de control tower corporativa.
 
-## Lo que incluye esta versión
-- **Dashboard logístico:** órdenes activas, unidades en ruta, alertas, seguimiento visual de camión, cola de excepciones y órdenes de compra ficticias.
-- **Historia por episodios:** cada reto abre una incidencia narrativa distinta dentro del turno operativo.
-- **Nombre completo obligatorio:** nombre(s), apellido paterno y apellido materno.
-- **Incisos aleatorios:** las opciones de selección múltiple se mezclan en cada carga y cambian obligatoriamente después de una respuesta incorrecta. La respuesta correcta continúa ligada al texto correcto y cada intento almacena el texto seleccionado y la letra que se mostró.
-- **Cálculo sin incisos:** el alumno debe escribir sus valores para el caso de costos de flete, OTD/OTIF y evaluación ponderada de proveedor.
-- **Regla de dos errores:** después de dos errores, se ofrece reintentar o saltar el reto. Si se salta, se registra como omitido y vale cero puntos.
-- **Avance secuencial de las tres fases**, puntuación formativa, retroalimentación, rachas y celebración al superar retos.
-- **Reportes PDF** que incluyen identidad, textos de respuesta enviados, intentos, errores, cálculos capturados, retos omitidos y puntajes por sesión.
-- El progreso del estudiante se conserva en el navegador local. No se envía información a un servidor ni se centraliza automáticamente.
+## Incluye
 
-## Casos de cálculo
-- Costos extraordinarios: 2 embarques × $12,000 MXN y $8,000 MXN de reproceso. El alumno captura el subtotal de fletes y el costo total del incidente.
-- KPI del proveedor: 20 entregas programadas, 18 a tiempo y 16 a tiempo y completas. El alumno calcula OTD y OTIF por separado.
-- Scorecard ponderado: calidad 40%, entrega 30%, costo 20%, servicio 10%; el alumno calcula la calificación final usando 90, 80, 100 y 70, respectivamente.
+- Portada ejecutiva con indicadores, seguimiento de embarques y estado del turno.
+- Navegación lateral dentro del centro de control logístico.
+- Paneles de tendencias de entrega, salud de proveedores y cola de excepciones.
+- Tres sesiones y 24 desafíos (8 por sesión), con desbloqueo progresivo.
+- Ejercicios numéricos sin incisos para costos de flete, costo total de adquisición, punto de reorden, OTD/OTIF y evaluación ponderada de proveedores.
+- Opciones conceptuales aleatorizadas; después de dos errores se permite saltar el reto, que queda registrado como omitido y vale cero puntos.
+- Nombre completo obligatorio y seguimiento local del progreso.
+- Generación de expediente PDF con respuestas, intentos, errores y resultados de cada sesión.
+- Rúbricas de evidencias académicas y manual de campo.
 
-## Ejecutar localmente
-Abre `index.html` en un navegador moderno. Tailwind CSS se carga desde CDN, así que se necesita conexión a internet para los estilos completos.
+## Cómo abrir
+
+Abre `index.html` en un navegador moderno. Para ver estilos, tipografías, imágenes y generar PDF, el dispositivo necesita conexión a internet porque el proyecto carga Tailwind CSS, Google Fonts, jsPDF y una fotografía de Unsplash desde sus CDN.
 
 ## Publicar en GitHub Pages
-1. Crea un repositorio público nuevo, por ejemplo `protocolo-nexus`.
+
+1. Crea un repositorio nuevo en GitHub.
 2. Sube `index.html` a la raíz del repositorio.
-3. Abre **Settings → Pages**.
-4. En **Build and deployment**, elige **Deploy from a branch**, rama `main`, carpeta `/(root)` y guarda.
-5. Si el usuario/repositorio conserva ese nombre, la URL esperada será `https://angelmaltos03-alt.github.io/protocolo-nexus/`.
+3. Ve a **Settings → Pages**.
+4. En **Build and deployment**, selecciona **Deploy from a branch**.
+5. Selecciona la rama `main` y la carpeta `/ (root)`, y guarda.
+6. Espera a que GitHub Pages publique el sitio y abre la URL que aparece en esa misma sección.
 
-## Límites importantes
-La aplicación es una simulación formativa cliente, no un examen de alta seguridad: las preguntas y las reglas de validación viven en el navegador y pueden inspeccionarse con herramientas de desarrollo. Para evitar suplantación y concentrar notas de todo el grupo en un solo panel, necesitaría un backend o plataforma de evaluación con autenticación y almacenamiento centralizado.
+## Datos y privacidad
 
+El progreso y los datos del participante se guardan en el navegador donde se usa el simulador. El HTML no envía respuestas a una base de datos central ni recoge resultados en secreto. El PDF descargado debe ser entregado por el alumno mediante el canal definido por el docente.
 
-## Actualización del simulador
-- 24 desafíos: 8 por cada una de las 3 sesiones.
-- Dashboards operativos de fletes, OTD/OTIF y evaluación ponderada de proveedores.
-- Cálculos escritos por el alumno y retos conceptuales de mayor complejidad.
-- Reporte descargable en PDF con respuestas, intentos, fallos, omisiones y resultados por sesión.
-- Botón rápido para generar PDF junto al registro del participante. Se eliminó el reinicio de candidato de la interfaz.
-- La página usa jsPDF desde CDN; el navegador necesita conexión para cargar esa biblioteca y descargar el PDF.
+Los escenarios, mapas y cifras del centro de control son simulaciones didácticas, no datos de una operación real.
