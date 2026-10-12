@@ -1112,18 +1112,21 @@ function renderGuidedStart(stage){
  const root=$('#guidedStart'),title=$('#guidedTitle'),copy=$('#guidedCopy'),list=$('#guidedList'),kicker=$('#guidedKicker'),button=$('#guidedContinue');
  if(!root||!title||!copy||!list||!kicker||!button)return;
  const stages=[
-  {k:'BIENVENIDA DE NEXUS · AGENTE DE NUEVO INGRESO',title:'Bienvenido, agente. Hoy comienza tu primer día en NEXUS.',copy:'Te incorporas al equipo de abastecimiento y logística. Tu trabajo será ayudar a que los materiales lleguen a tiempo, elegir proveedores con evidencia y atender riesgos sin cerrar casos antes de comprobarlos. No necesitas conocer la plataforma de memoria: las misiones te dirán a dónde ir y qué revisar.',items:['Primero entraremos a Misiones: ahí está el trabajo que debes completar y el orden que debes seguir.','Cada misión te indicará el módulo exacto que debes consultar y qué datos necesitas observar. No tienes que adivinar ni recorrer todos los menús.','Cuando regreses al tablero, las tarjetas y “Últimas actualizaciones” te ayudarán a detectar riesgos. Sus botones pueden abrir una explicación que valida tu decisión y te dice por qué es adecuada o no.','Los datos y las acciones son una simulación académica. No se contacta a proveedores ni transportistas reales.'],button:'Entendido, agente · Ir a Misiones →'},
-  {k:'TU PRIMERA TAREA · SESIÓN 1',title:'Vamos a iniciar tu primera misión.',copy:'Ya estás en Misiones. Abre el primer reto de “Fundamentos de compras y abastecimiento”. Lee el escenario y la instrucción completa: la misión te dirá a qué módulo ir y qué evidencia necesitas.',items:['Abre “Sesión 1 · Fundamentos de compras y abastecimiento”.','Pulsa “Abrir sesión” para entrar al primer reto disponible. Si ya avanzaste antes, se abrirá el primer reto pendiente.','No respondas todavía por intuición: primero lee la guía del reto y utiliza el botón para abrir el módulo que la misión te indique.'],button:'Abrir mi primer reto →'},
-  {k:'CÓMO TRABAJAR · CICLO DE CADA MISIÓN',title:'Tu método de trabajo: sigue la misión, no adivines.',copy:'En cada reto vas a repetir el mismo ciclo. El módulo contiene la información; la misión plantea el problema; tu respuesta demuestra la decisión. Después, NEXUS te dará retroalimentación para corregir o avanzar.',items:['1. Lee el escenario, la pregunta y “Instrucciones detalladas”.','2. Pulsa “Abrir módulo indicado” cuando la misión lo pida y revisa los datos pertinentes.','3. Regresa al reto, responde en el formato solicitado y pulsa “Validar respuesta”.','4. Si es incorrecta, lee por qué y vuelve a intentarlo. Solo cuando sea correcta podrás avanzar al siguiente reto.','5. Si usas “Últimas actualizaciones”, no cierres por cerrar: responde primero la pregunta de validación, revisa la explicación y registra la acción que corresponda.'],button:'Comenzar · Estoy listo →'}
+  {k:'BIENVENIDA · PRIMER DÍA EN NEXUS',title:'Bienvenido, agente. Hoy comienza tu primer día.',copy:'Te integras al equipo de compras y logística de Cadena Cobalto. Tu responsabilidad será analizar datos, detectar riesgos y justificar decisiones para mantener el suministro de la planta. No estás aquí para mirar el tablero y terminar: tu trabajo se entrega resolviendo las misiones.',items:['Tu actividad obligatoria está en “Misiones”, en el menú izquierdo.','“Inicio” es un tablero de consulta; leerlo no completa la actividad ni cuenta como entregar respuestas.','Cada misión te dirá qué módulo abrir, qué evidencia revisar y qué respuesta debes validar.','Todo es una simulación académica: no se contacta a proveedores ni transportistas reales.'],button:'Entendido · Ir a Misiones →'},
+  {k:'PASO 1 · LOCALIZA TU TRABAJO',title:'Aquí empieza la actividad: en Misiones.',copy:'Esta pantalla contiene las instrucciones y la evaluación. El tablero de Inicio sirve como fuente de información, pero no sustituye los 24 retos de las tres sesiones.',items:['Entra a “Sesión 1 · Fundamentos de compras y abastecimiento”.','Pulsa “Abrir sesión”; NEXUS te llevará al primer reto que te falta.','Lee el caso completo antes de contestar. El reto te indicará qué módulo consultar y qué dato necesitas usar.'],button:'Abrir mi primer reto →'},
+  {k:'TUTORIAL INTERACTIVO · PASO 2',title:'Así completas cada reto. Sigue este orden.',copy:'No necesitas memorizar NEXUS ni adivinar la respuesta. Sigue las instrucciones de la misión y utiliza evidencia del módulo indicado. Completar el tutorial no cuenta como terminar la actividad: debes validar los retos.',items:['1. LEE: revisa el escenario, la pregunta y las instrucciones detalladas.','2. CONSULTA: pulsa “Abrir módulo indicado” y comprueba los datos solicitados.','3. RESPONDE: vuelve a la misión e introduce tu decisión o cálculo.','4. VALIDA: pulsa “Validar respuesta” y lee la retroalimentación.','5. AVANZA: si es incorrecta, corrige y vuelve a intentar; el siguiente reto se habilita al acertar.'],button:'Empezar la actividad →'}
  ];
  const item=stages[Math.max(0,Math.min(stage,stages.length-1))];
  kicker.textContent=item.k;title.textContent=item.title;copy.textContent=item.copy;
  list.innerHTML=item.items.map((x,i)=>'<li><span class="guided-num">'+(i+1)+'</span><span>'+esc(x)+'</span></li>').join('');
  [1,2,3].forEach(n=>$('#guidedProgress'+n)?.classList.toggle('active',n<=stage+1));
  button.textContent=item.button;
+ root.style.setProperty('display','flex','important');
+ root.style.setProperty('z-index','100100','important');
  root.classList.add('is-open');
+ root.setAttribute('data-guided-stage',String(stage));
 }
-function closeGuidedStart(){const root=$('#guidedStart');if(root)root.classList.remove('is-open');if(current&&sessions[current.session]?.questions[current.index]){const el=$('#missionReference');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});}}
+function closeGuidedStart(){const root=$('#guidedStart');if(root){root.classList.remove('is-open');root.style.setProperty('display','none','important');}if(current&&sessions[current.session]?.questions[current.index]){const el=$('#missionReference');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});}}
 function beginGuidedJourney(){
  if(guidedStage===0){go('misiones');renderGuidedStart(1);return}
  if(guidedStage===1){openChallenge(0,firstPending(0));renderGuidedStart(2);return}
@@ -1166,8 +1169,8 @@ function enterAsParticipant(rawName){
   $('#participantDisplay').textContent=name;
   const player=$('#playerDisplay');if(player)player.textContent=name;
 
-  // Programar la bienvenida fuera de las actualizaciones del dashboard: un error secundario no debe impedir el onboarding.
-  window.setTimeout(()=>{try{renderGuidedStart(0)}catch(e){console.error("NEXUS: no se pudo mostrar la bienvenida guiada.",e)}},220);
+  // La bienvenida es parte obligatoria del acceso; mostrarla inmediatamente, sin depender del temporizador ni del dashboard.
+  try{renderGuidedStart(0)}catch(e){console.error('NEXUS: error al abrir la bienvenida guiada.',e)}
   try{
     persist();
     renderIdentity();
