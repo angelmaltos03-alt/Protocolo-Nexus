@@ -59,6 +59,43 @@ html,body{background:#050e19}body{font-size:13px}.sidebar{width:144px;background
 #supplierCostChallenge .table-scroll table input{background:#091725!important;border:1px solid #35536a!important;border-radius:8px!important;color:#edf7ff!important;padding:9px!important;min-height:38px}
 #supplierCostChallenge .table-scroll table input:focus{outline:none;border-color:#35c8bd!important;box-shadow:0 0 0 2px #35c8bd20}
 @media(max-width:720px){#supplierCostChallenge .supplier-choice-grid,#supplierCostChallenge .supplier-cost-summary{grid-template-columns:1fr}#supplierCostChallenge .supplier-pick{min-height:74px}#supplierCostChallenge .supplier-validate-row{align-items:stretch}#supplierCostChallenge #validateSupplierApplied{width:100%}}
+/* Premium liquid-glass treatment for supplier challenge */
+#supplierCostChallenge .table-scroll{border:1px solid rgba(120,190,220,.24);border-radius:18px;overflow:auto;background:linear-gradient(135deg,rgba(16,38,57,.8),rgba(5,18,31,.78));box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 14px 34px rgba(0,0,0,.16);backdrop-filter:blur(16px)}
+#supplierCostChallenge .table-scroll table{min-width:760px;border-collapse:separate;border-spacing:0;background:transparent}
+#supplierCostChallenge .table-scroll thead th{background:rgba(31,67,91,.78);color:#b8d8e9;font-size:10px;letter-spacing:.08em;border-bottom:1px solid rgba(115,183,214,.2);padding:14px 12px}
+#supplierCostChallenge .table-scroll tbody tr{background:rgba(12,29,45,.48)}
+#supplierCostChallenge .table-scroll tbody tr:nth-child(2){background:rgba(26,55,72,.38)}
+#supplierCostChallenge .table-scroll td{padding:12px;border-bottom:1px solid rgba(126,177,202,.12);color:#e7f5fd;vertical-align:middle}
+#supplierCostChallenge .table-scroll table input{width:100%!important;min-width:78px;min-height:43px!important;padding:10px 12px!important;border:1px solid rgba(129,190,220,.3)!important;border-radius:11px!important;background:linear-gradient(145deg,rgba(34,65,85,.88),rgba(9,25,40,.95))!important;color:#f4fbff!important;font-size:14px;font-weight:750;box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 4px 12px rgba(0,0,0,.12);transition:border-color .18s,box-shadow .18s}
+#supplierCostChallenge .table-scroll table input:hover{border-color:rgba(99,218,222,.6)!important}
+#supplierCostChallenge .table-scroll table input:focus{outline:none;border-color:#5ee5d8!important;box-shadow:0 0 0 3px rgba(59,213,205,.15),0 0 24px rgba(45,212,191,.08)!important}
+#supplierCostChallenge .supplier-applied-question{position:relative;overflow:hidden;border:1px solid rgba(126,194,221,.26);border-radius:19px;background:linear-gradient(145deg,rgba(19,48,68,.88),rgba(7,21,35,.9));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 16px 36px rgba(0,0,0,.15);backdrop-filter:blur(18px);padding:21px}
+#supplierCostChallenge .supplier-applied-question:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 100% 0,rgba(76,201,221,.12),transparent 45%)}
+#supplierCostChallenge .supplier-applied-question>*{position:relative}
+#supplierCostChallenge .supplier-choice-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:15px}
+#supplierCostChallenge .supplier-pick{display:flex;align-items:center;gap:12px;width:100%;min-height:94px;padding:15px;text-align:left;border:1px solid rgba(135,186,212,.3);border-radius:16px;background:linear-gradient(145deg,rgba(38,69,90,.72),rgba(8,24,39,.88));color:#edf8ff;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 8px 22px rgba(0,0,0,.12);backdrop-filter:blur(16px);cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s}
+#supplierCostChallenge .supplier-pick:hover{transform:translateY(-2px);border-color:rgba(105,230,219,.65);box-shadow:0 12px 28px rgba(0,0,0,.2)}
+#supplierCostChallenge .supplier-pick[aria-pressed="true"]{border-color:#5de2d3;background:linear-gradient(135deg,rgba(19,114,118,.58),rgba(22,53,79,.94));box-shadow:inset 0 0 0 1px rgba(93,226,211,.28),0 0 0 3px rgba(45,212,191,.08),0 12px 30px rgba(0,0,0,.18)}
+#supplierCostChallenge .supplier-pick:focus-visible{outline:3px solid #a5f3eb;outline-offset:3px}
+#supplierCostChallenge .supplier-pick-icon{flex:0 0 42px;width:42px;height:42px;display:grid;place-items:center;border:1px solid rgba(139,204,227,.35);border-radius:13px;background:linear-gradient(145deg,rgba(59,113,139,.6),rgba(17,42,61,.9));color:#c6f9ff;font-size:17px;font-weight:900}
+#supplierCostChallenge .supplier-pick[aria-pressed="true"] .supplier-pick-icon{border-color:rgba(103,243,223,.65);background:linear-gradient(145deg,#1c9b96,#175a76);color:white}
+#supplierCostChallenge .supplier-pick-copy{display:grid;gap:5px;min-width:0}
+#supplierCostChallenge .supplier-pick-copy strong{font-size:14px;color:#f2fbff}
+#supplierCostChallenge .supplier-pick-copy small{font-size:11px;line-height:1.5;color:#b4ccdb}
+#supplierCostChallenge .supplier-pick-check{margin-left:auto;flex:0 0 25px;width:25px;height:25px;display:grid;place-items:center;border:1px solid rgba(142,186,208,.45);border-radius:50%;color:transparent;background:rgba(5,19,31,.5);font-size:13px}
+#supplierCostChallenge .supplier-pick[aria-pressed="true"] .supplier-pick-check{border-color:#62e5d5;background:#62e5d5;color:#06212b}
+#supplierCostChallenge .supplier-answer-input{min-height:58px!important;padding:15px 17px!important;border:1px solid rgba(127,193,222,.32)!important;border-radius:14px!important;background:linear-gradient(145deg,rgba(33,66,87,.82),rgba(7,22,37,.98))!important;color:#f4fbff!important;font-size:20px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 8px 20px rgba(0,0,0,.14)!important}
+#supplierCostChallenge .supplier-answer-input:focus{border-color:#5de2d3!important;box-shadow:0 0 0 3px rgba(45,212,191,.14),0 8px 24px rgba(0,0,0,.16)!important}
+#supplierCostChallenge .supplier-answer-input::placeholder{color:#829fb3!important}
+#supplierCostChallenge .supplier-feedback-line{border:1px solid rgba(123,181,207,.18);background:rgba(4,17,29,.55);color:#b4ccdb}
+#supplierCostChallenge .supplier-validate-row{border:1px solid rgba(112,191,215,.22);border-radius:16px;background:linear-gradient(120deg,rgba(18,43,61,.88),rgba(7,20,33,.94));box-shadow:inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px);padding:16px}
+#supplierCostChallenge #validateSupplierApplied{min-height:52px;padding:14px 22px;border:1px solid rgba(129,255,235,.6);border-radius:13px;background:linear-gradient(110deg,#0b9f9b,#2563eb);color:#fff;font-weight:850;box-shadow:inset 0 1px 0 rgba(255,255,255,.25),0 9px 24px rgba(13,148,136,.24);transition:transform .18s,filter .18s,box-shadow .18s}
+#supplierCostChallenge #validateSupplierApplied:hover{filter:brightness(1.12);transform:translateY(-2px);box-shadow:0 14px 30px rgba(13,148,136,.32)}
+#supplierCostChallenge .supplier-cost-summary .metric-card{border:1px solid rgba(126,194,221,.24);border-radius:17px;background:linear-gradient(145deg,rgba(21,49,69,.9),rgba(7,22,36,.96));box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 12px 28px rgba(0,0,0,.14);backdrop-filter:blur(16px)}
+#supplierCostChallenge .supplier-cost-summary .metric-card:nth-child(2){border-color:rgba(79,214,190,.34)}
+#supplierCostChallenge .supplier-cost-summary .metric-card:nth-child(3){border-color:rgba(247,190,98,.34)}
+@media(max-width:720px){#supplierCostChallenge .supplier-choice-grid{grid-template-columns:1fr}#supplierCostChallenge .supplier-applied-question{padding:16px}#supplierCostChallenge .supplier-pick{min-height:82px}}
+
 /* Guided onboarding: step-by-step participant journey */
 #guidedStart{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(2,8,16,.82);backdrop-filter:blur(7px);color:#edf7ff}
 #guidedStart.is-open{display:flex}
