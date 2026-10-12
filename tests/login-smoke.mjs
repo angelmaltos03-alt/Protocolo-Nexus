@@ -81,8 +81,53 @@ try {
   if (!result.answerPanel || !result.numericInput || result.numericValue !== '36420' || !result.moduleStep || !result.answerStep || !result.nextVisible) {
     throw new Error('Challenge workflow incomplete: ' + JSON.stringify(result));
   }
+  await page.locator('[data-view="proveedores"]').click();
+  const expectedDecisions = ['Plan de mejora', 'Aprobado', 'Plan de mejora', 'Aprobado', 'Plan de mejora'];
+  for (let i = 0; i < expectedDecisions.length; i++) {
+    await page.locator('.supplier-choice').nth(i).selectOption(expectedDecisions[i]);
+  }
+  const scorecardLive = await page.evaluate(() => ({
+    correctCount: document.querySelector('#supplierCorrectCount')?.textContent,
+    points: document.querySelector('#supplierScorecardPoints')?.textContent,
+    rowFeedback: [...document.querySelectorAll('[id^="supplierChoiceFeedback-"]')].map(el => el.textContent),
+    locked: document.querySelector('#supplierAppliedStage')?.classList.contains('hidden')
+  }));
+  if (scorecardLive.correctCount !== '5/5 correctas' || scorecardLive.points !== '50 de 50 puntos' || scorecardLive.locked) {
+    throw new Error('Scorecard live feedback or stage unlock failed: ' + JSON.stringify(scorecardLive));
+  }
+  await page.locator('#validateSupplierDecisions').click();
+  await page.locator('#supplierAppliedStage').waitFor({ state: 'visible', timeout: 10000 });
+  const quoteStart = await page.evaluate(() => ({
+    north: document.querySelector('#quoteNorthTotal')?.textContent,
+    center: document.querySelector('#quoteCenterTotal')?.textContent
+  }));
+  if (!quoteStart.north?.includes('96,550') || !quoteStart.center?.includes('95,360')) {
+    throw new Error('Supplier totals did not calculate live: ' + JSON.stringify(quoteStart));
+  }
+  await page.locator('#chosenQuote').selectOption('Centro');
+  await page.locator('#supplierSavingsAnswer').fill('1190');
+  await page.locator('#validateSupplierApplied').click();
+  await page.locator('#supplierCostResult').waitFor({ state: 'visible', timeout: 10000 });
+  const applied = await page.evaluate(() => ({
+    feedback: document.querySelector('#supplierAppliedFeedback')?.textContent,
+    missionNumber: document.querySelector('#supplierMissionAnswer')?.textContent,
+    appliedStatus: document.querySelector('#supplierAppliedStatus')?.textContent
+  }));
+  if (!applied.feedback?.includes('correcto') || !applied.missionNumber?.includes('1190') || applied.appliedStatus !== 'VALIDADO') {
+    throw new Error('Applied supplier challenge did not validate: ' + JSON.stringify(applied));
+  }
+  await page.locator('#quoteCenterPrice').fill('193');
+  const changedQuote = await page.evaluate(() => ({
+    center: document.querySelector('#quoteCenterTotal')?.textContent,
+    resultHidden: document.querySelector('#supplierCostResult')?.classList.contains('hidden')
+  }));
+  if (!changedQuote.center?.includes('95,840') || !changedQuote.resultHidden) {
+    throw new Error('Cost totals did not update or result did not relock after changing quote: ' + JSON.stringify(changedQuote));
+  }
+  await page.locator('#quoteCenterPrice').fill('192');
   if (errors.length) throw new Error('Browser JavaScript errors: ' + errors.join(' | '));
-  console.log('NEXUS_LOGIN_AND_ANSWER_FIELD_PASS', JSON.stringify({url, ...result, pageErrors: errors}));
+  if (errors.length) throw new Error('Browser JavaScript errors: ' + errors.join(' | '));
+  console.log('NEXUS_LOGIN_ANSWER_SUPPLIER_STAGES_PASS', JSON.stringify({url, ...result, scorecardLive, quoteStart, applied, changedQuote, pageErrors: errors}));
 } finally {
   await browser.close();
 }
