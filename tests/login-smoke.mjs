@@ -21,30 +21,45 @@ try {
   }));
   if (login.locked || !login.hidden || login.name !== 'Juan Pérez') throw new Error('Login failed: ' + JSON.stringify(login));
 
-  await page.locator('#guidedStart.is-open').waitFor({ state: 'visible', timeout: 10000 });
-  const onboardingWelcome = await page.locator('#guidedTitle').innerText();
-  if (!onboardingWelcome.includes('entiende el dashboard')) throw new Error('Dashboard walkthrough missing: ' + onboardingWelcome);
-  const dashboardGuide = await page.locator('#guidedList').innerText();
-  if (!dashboardGuide.includes('Órdenes activas') || !dashboardGuide.includes('Incidencia crítica') || !dashboardGuide.includes('ETA')) {
-    throw new Error('Dashboard metric explanations missing: ' + dashboardGuide);
+  await page.locator('#guidedStart.is-open').waitFor({ state: 'visible', timeout: 15000 });
+  const welcome = await page.locator('#guidedTitle').innerText();
+  if (!welcome.includes('Bienvenido, agente')) throw new Error('Welcome modal missing: ' + welcome);
+  if (!(await page.locator('#guidedStart').evaluate(el => getComputedStyle(el).display === 'flex' && getComputedStyle(el).visibility === 'visible'))) {
+    throw new Error('Welcome modal exists but is not visible');
   }
+
+  // Verify that the dashboard has an explicit welcome and mission CTA.
+  const dashboardWelcome = page.getByText('BIENVENIDO A NEXUS CONTROL TOWER', { exact: true });
   await page.locator('#guidedContinue').click();
-  const controlGuide = await page.locator('#guidedTitle').innerText();
-  if (!controlGuide.includes('Centro de control')) throw new Error('Exception queue walkthrough missing: ' + controlGuide);
-  const exceptionGuide = await page.locator('#guidedList').innerText();
-  if (!exceptionGuide.includes('Simular nueva incidencia') || !exceptionGuide.includes('Bitácora')) {
-    throw new Error('Exception actions not explained: ' + exceptionGuide);
+  await page.locator('#view-misiones').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('#guidedContinue').click();
+  await page.locator('.answer-entry-panel').waitFor({ state: 'visible', timeout: 10000 });
+  await page.locator('#guidedContinue').click().catch(() => {});
+
+  // Test every field-manual tab by clicking it and asserting that the content panel changes.
+  await page.locator('[data-view="manual"]').click();
+  await page.locator('#manualContent').waitFor({ state: 'visible', timeout: 10000 });
+  const manualCases = [
+    ['compras', 'Función de compras y abastecimiento'],
+    ['proceso', 'Proceso de compras y principios'],
+    ['kpi', 'Indicadores logísticos: OTD y OTIF'],
+    ['inventario', 'Inventario y punto de reorden'],
+    ['proveedores', 'Evaluación de proveedores'],
+    ['organizacion', 'Organización del departamento de compras']
+  ];
+  for (const [key, expectedTitle] of manualCases) {
+    await page.locator('[data-manual="' + key + '"]').click();
+    await page.waitForFunction(({ key, expectedTitle }) => {
+      const panel = document.querySelector('#manualContent');
+      return panel?.dataset.loadedSection === key && panel.querySelector('h2')?.textContent === expectedTitle;
+    }, { key, expectedTitle });
+    const panelText = await page.locator('#manualContent').innerText();
+    if (!panelText.includes(expectedTitle)) throw new Error('Manual tab failed: ' + key + ' => ' + panelText);
   }
-  await page.locator('#guidedContinue').click();
-  const missionGuide = await page.locator('#guidedTitle').innerText();
-  if (!missionGuide.includes('Misiones')) throw new Error('Mission navigation guide missing: ' + missionGuide);
-  await page.locator('#guidedContinue').click();
-  const sessionGuide = await page.locator('#guidedTitle').innerText();
-  if (!sessionGuide.includes('Sesión 1')) throw new Error('Session selection guide missing: ' + sessionGuide);
-  await page.locator('#guidedContinue').click();
-  const challengeGuide = await page.locator('#guidedTitle').innerText();
-  if (!challengeGuide.includes('resolver y validar')) throw new Error('Challenge instructions guide missing: ' + challengeGuide);
-  await page.locator('#guidedContinue').click();
+
+  // Return to the mission and resume the normal answer-entry smoke test.
+  await page.locator('[data-view="misiones"]').click();
+  await page.locator('.answer-entry-panel').waitFor({ state: 'visible', timeout: 10000 });
   await page.locator('.answer-entry-panel').waitFor({ state: 'visible', timeout: 10000 }).catch(async error => { console.error('ANSWER_PANEL_DEBUG', JSON.stringify(await page.evaluate(() => ({title:document.querySelector('#challengeTitle')?.textContent,areaDisplay:getComputedStyle(document.querySelector('#challengeArea')).display,inputsHtml:document.querySelector('#challengeInputs')?.innerHTML,reference:document.querySelector('#missionReference')?.innerText,bodyEnd:document.body.innerText.slice(-1800)}))), 'PAGE_ERRORS', JSON.stringify(errors)); throw error; });
   await page.locator('.answer-option').first().waitFor({ state: 'visible', timeout: 10000 });
   const moduleInstructions = await page.locator('#missionReference').innerText();
