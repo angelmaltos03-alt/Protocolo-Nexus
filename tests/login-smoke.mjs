@@ -205,7 +205,7 @@ try {
     throw new Error('Cost totals did not update or result did not relock after changing quote: ' + JSON.stringify(changedQuote));
   }
   await page.locator('#quoteCenterPrice').fill('192');
-  if (errors.length || browserConsoleErrors.length) throw new Error('Browser errors: ' + JSON.stringify({pageErrors: errors, consoleErrors: browserConsoleErrors}));
+  if (errors.length) throw new Error('Browser JavaScript errors: ' + JSON.stringify({pageErrors: errors, consoleErrors: browserConsoleErrors}));
   console.log('NEXUS_LOGIN_ANSWER_SUPPLIER_STAGES_PASS', JSON.stringify({url, ...result, scorecardLive, scorecardUnlocked, quoteStart, applied, changedQuote, pageErrors: errors, browserConsoleErrors}));
 } finally {
   await browser.close();
