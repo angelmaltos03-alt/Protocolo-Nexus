@@ -485,7 +485,7 @@ function renderMissionReference(q){
 }
 function updateActivityDock(){
  const dock=$('#activityDock');if(!dock)return;
- const view=$('.view').find(v=>v.classList.contains('active'))?.id||'';
+ const view=$$('.view').find(v=>v.classList.contains('active'))?.id||'';
  const active=!!current&&!!sessions[current.session]?.questions[current.index]&&view!=='view-misiones';
  if(!active){dock.classList.remove('visible');return}
  const s=sessions[current.session],q=s.questions[current.index],g=getMissionGuide(q);
