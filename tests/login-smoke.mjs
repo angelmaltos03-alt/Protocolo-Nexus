@@ -4,7 +4,7 @@ const url = 'https://angelmaltos03-alt.github.io/Protocolo-Nexus/';
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
 const errors = [];
-page.on('pageerror', error => errors.push(error.message));
+page.on('pageerror', error => errors.push(error.stack || error.message));
 try {
   await page.goto(url, { waitUntil: 'networkidle', timeout: 90000 });
   await page.evaluate(() => localStorage.clear());
