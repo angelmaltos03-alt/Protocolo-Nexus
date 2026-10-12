@@ -605,9 +605,9 @@ function updateLoginPreview(rawName){
 }
 $('#entryFullName').addEventListener('input',()=>{const err=$('#loginError');err.hidden=true;$('#entryFullName').removeAttribute('aria-invalid');updateLoginPreview($('#entryFullName').value)});
 function enterAsParticipant(rawName){
-  const name=String(rawName||'').trim().replace(/\s+/g,' ');
-  if(name.length<5||name.split(' ').filter(Boolean).length<2){
-    const err=$('#loginError');err.textContent='Escribe tu nombre y al menos un apellido para continuar.';err.hidden=false;$('#entryFullName').setAttribute('aria-invalid','true');$('#entryFullName').focus();return;
+  const name=String(rawName||'').trim().replace(/\\s+/g,' ');
+  if(!name||name.length<2){
+    const err=$('#loginError');err.textContent='Escribe tu nombre para continuar.';err.hidden=false;$('#entryFullName').setAttribute('aria-invalid','true');$('#entryFullName').focus();return;
   }
   const key=participantStoreKey(name);
   let saved=null;
@@ -620,13 +620,31 @@ function enterAsParticipant(rawName){
   }catch(e){saved=null}
   STORE=key;
   state=saved?{...makeFreshStudentState(name),...saved,name,orders:saved.orders?.length?saved.orders:orders.map(o=>({...o})),alerts:saved.alerts?.length?saved.alerts:alerts.map(a=>({...a}))}:makeFreshStudentState(name);
-  persist();
-  renderReportOnInit();
-  renderIdentity();
-  const gate=$('#loginGate');gate.classList.add('is-exiting');document.documentElement.classList.remove('login-locked');document.body.classList.remove('login-locked');
-  window.setTimeout(()=>{gate.hidden=true;gate.classList.remove('is-exiting');},280);
+
+  // Unlock first so a dashboard/report rendering error can never trap the participant on login.
+  const gate=$('#loginGate');
+  gate.classList.add('is-exiting');
+  document.documentElement.classList.remove('login-locked');
+  document.body.classList.remove('login-locked');
+  window.setTimeout(()=>{gate.hidden=true;gate.classList.remove('is-exiting')},180);
   $('#entryFullName').removeAttribute('aria-invalid');
   $('#entryFullName').value='';
+  $('#topName').textContent=name;
+  $('#topAvatar').textContent=name.split(/\\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase()||'OP';
+  $('#identityBadge').textContent='REGISTRADO';
+  $('#identityBadge').className='status';
+  $('#participantDisplay').textContent=name;
+  const player=$('#playerDisplay');if(player)player.textContent=name;
+
+  try{
+    persist();
+    renderIdentity();
+    renderReportOnInit();
+    renderIdentity();
+  }catch(e){
+    console.error('NEXUS: acceso concedido; se omitió una actualización secundaria del dashboard.',e);
+    const err=$('#loginError');err.textContent='Acceso concedido. Algunas tarjetas del dashboard no pudieron actualizarse; puedes continuar con la actividad.';err.hidden=false;
+  }
 }
 $('#participantLoginForm').addEventListener('submit',event=>{event.preventDefault();enterAsParticipant($('#entryFullName').value)});
 document.documentElement.classList.add('login-locked');document.body.classList.add('login-locked');
