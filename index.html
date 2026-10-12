@@ -28,6 +28,23 @@ html,body{background:#050e19}body{font-size:13px}.sidebar{width:144px;background
 @media(max-width:380px){.nexus-hero .hero-copy h2{font-size:25px}.nexus-mini-kpi{gap:6px;padding:8px 6px}.nexus-mini-kpi span{white-space:normal}.nexus-pagebar .heading-actions{gap:6px}.nexus-pagebar .heading-actions .status{font-size:7px;padding:5px}.nexus-pagebar .btn{font-size:9px;padding:8px}.nexus-hero .hero-copy h2{font-size:25px}.nexus-cost-summary{grid-template-columns:1fr}.nexus-cost-summary .nexus-cost-total{grid-column:auto}.nexus-performance-cards strong{font-size:18px}}
 
 
+/* Guided onboarding: step-by-step participant journey */
+#guidedStart{position:fixed;inset:0;z-index:99990;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(2,8,16,.82);backdrop-filter:blur(7px);color:#edf7ff}
+#guidedStart.is-open{display:flex}
+#guidedStart .guided-card{width:min(650px,100%);max-height:min(88vh,820px);overflow:auto;border:1px solid #2b5872;border-radius:20px;background:linear-gradient(145deg,#0c2031,#07131f 72%);box-shadow:0 28px 100px #0009;padding:clamp(22px,4vw,38px)}
+#guidedStart .guided-kicker{font-size:11px;letter-spacing:.16em;font-weight:800;color:#5bd8d0;text-transform:uppercase}
+#guidedStart h2{font-size:clamp(24px,4vw,34px);line-height:1.15;margin:12px 0;color:#f3f9ff}
+#guidedStart .guided-copy{font-size:15px;line-height:1.75;color:#c1d2e0;margin:0}
+#guidedStart .guided-list{display:grid;gap:10px;margin:20px 0;padding:0;list-style:none}
+#guidedStart .guided-list li{display:flex;gap:11px;align-items:flex-start;padding:12px;border:1px solid #203c51;border-radius:12px;background:#0b1a28;color:#dce9f4;line-height:1.55}
+#guidedStart .guided-num{flex:0 0 27px;width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:#123c4b;color:#69e4d7;font-weight:800}
+#guidedStart .guided-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:22px}
+#guidedStart .guided-primary{border:0;border-radius:10px;padding:13px 18px;background:linear-gradient(100deg,#0ea5a4,#2563eb);color:white;font-weight:800;cursor:pointer;min-height:46px}
+#guidedStart .guided-primary:focus-visible{outline:3px solid #a5f3fc;outline-offset:3px}
+#guidedStart .guided-progress{display:flex;gap:6px;margin-top:20px}
+#guidedStart .guided-progress span{height:4px;flex:1;border-radius:9px;background:#20374a}
+#guidedStart .guided-progress span.active{background:#35c9bd}
+@media(max-width:600px){#guidedStart{padding:12px}#guidedStart .guided-card{padding:22px 18px;border-radius:16px}#guidedStart .guided-copy{font-size:14px}}
 /* Required participant entry screen */
 html.login-locked,html.login-locked body{height:100%;overflow:hidden}
 #loginGate{position:fixed;inset:0;z-index:99999;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);align-items:center;gap:clamp(25px,6vw,90px);padding:clamp(24px,6vw,88px);overflow:auto;background:radial-gradient(ellipse at 18% 18%,#123e5d99,transparent 35%),radial-gradient(ellipse at 88% 86%,#064e4788,transparent 32%),linear-gradient(130deg,#050d18 0%,#071421 55%,#081b2a 100%);color:#eaf4fc;opacity:1;transition:opacity .28s ease}
@@ -341,6 +358,16 @@ html.login-locked,html.login-locked body{height:100%;overflow:hidden}
 <div class="footer-note">NEXUS CONTROL TOWER · SIMULACIÓN ACADÉMICA · Los datos operativos son ficticios y no están conectados a sistemas empresariales reales.</div>
 </div>
 </main>
+</div>
+<div id="guidedStart" aria-live="polite" aria-modal="true" role="dialog" aria-labelledby="guidedTitle">
+ <section class="guided-card">
+  <div class="guided-kicker" id="guidedKicker">RECORRIDO GUIADO · PASO 1 DE 3</div>
+  <h2 id="guidedTitle">Bienvenido a NEXUS Control Tower</h2>
+  <p class="guided-copy" id="guidedCopy"></p>
+  <ol class="guided-list" id="guidedList"></ol>
+  <div class="guided-progress" aria-hidden="true"><span id="guidedProgress1" class="active"></span><span id="guidedProgress2"></span><span id="guidedProgress3"></span></div>
+  <div class="guided-actions"><button type="button" class="guided-primary" id="guidedContinue">Entrar a Protocolo para iniciar las misiones →</button></div>
+ </section>
 </div>
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal"><h2 id="modalTitle">Confirmar acción</h2><p id="modalText">Esta acción cambiará el estado de la simulación.</p><div class="modal-actions"><button class="btn" id="modalCancel">Cancelar</button><button class="btn btn-primary" id="modalConfirm">Confirmar</button></div></div></div>
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
@@ -932,6 +959,30 @@ function updateLoginPreview(rawName){
   $('#loginResumeHint').textContent=hasSaved?'Se encontró progreso guardado para este nombre.':'El progreso aparecerá aquí al volver a ingresar.';
   $('#loginSubmitButton').childNodes[0].textContent=hasSaved?'Retomar protocolo ':'Iniciar experiencia inmersiva ';
 }
+let guidedStage=0;
+function renderGuidedStart(stage){
+ guidedStage=stage;
+ const root=$('#guidedStart'),title=$('#guidedTitle'),copy=$('#guidedCopy'),list=$('#guidedList'),kicker=$('#guidedKicker'),button=$('#guidedContinue');
+ if(!root||!title||!copy||!list||!kicker||!button)return;
+ const stages=[
+  {k:'RECORRIDO GUIADO · PASO 1 DE 3',title:'Bienvenido a NEXUS Control Tower',copy:'Ya ingresaste con tu nombre. Estás en el dashboard “Centro de control logístico”. No necesitas explorar toda la página por tu cuenta: te vamos a llevar en orden. Primero entrarás a Misiones; después abrirás la primera sesión y resolverás un reto a la vez.',items:['Mira el dashboard como el tablero general de la operación: muestra órdenes, unidades en tránsito, retrasos e incidencias simuladas.','No intentes contestar todavía ni abras otros módulos al azar. Cada misión te dirá exactamente qué módulo consultar y qué dato necesitas.','El progreso se guarda en este navegador para que puedas retomar tu recorrido con el mismo nombre.'],button:'Entrar a Protocolo para iniciar las misiones →'},
+  {k:'RECORRIDO GUIADO · PASO 2 DE 3',title:'Ahora abre la primera sesión',copy:'Ya estás en la sección Misiones operativas. Aquí verás las tarjetas de las sesiones. Vamos a comenzar por la primera; las siguientes se habilitan conforme completes los retos anteriores.',items:['Busca la tarjeta “Sesión 1 · Fundamentos de compras y abastecimiento”.','Pulsa el botón “Abrir sesión 1” que aparece en esta ventana para abrir el primer reto automáticamente.','No saltes a otras sesiones: sigue el orden y valida cada respuesta antes de avanzar.'],button:'Abrir Sesión 1 · Fundamentos →'},
+  {k:'RECORRIDO GUIADO · PASO 3 DE 3',title:'Así resolverás cada reto',copy:'Ya estás en el Reto 1. En todos los retos seguirás la misma rutina. Lee cada bloque en orden y no pulses “Validar respuesta” hasta haber terminado.',items:['Lee el título, la pregunta y el escenario completo. No respondas solo por intuición.','Revisa el panel de datos del reto y lee las “Instrucciones detalladas”; te indicarán qué abrir, qué dato buscar y cómo usarlo.','Si las instrucciones te mandan a un módulo, pulsa “Abrir módulo indicado”, revisa los datos y luego vuelve a la misión.','Contesta en el formato indicado y pulsa “Validar respuesta”. Si es incorrecta, lee la retroalimentación y vuelve a intentarlo.','Cuando el sistema confirme que es correcta, pulsa el botón verde “Avanzar al siguiente reto”. Repite hasta completar los ocho retos de la sesión.'],button:'Entendido · Ver las instrucciones del Reto 1 ↓'}
+ ];
+ const item=stages[stage];
+ kicker.textContent=item.k;title.textContent=item.title;copy.textContent=item.copy;
+ list.innerHTML=item.items.map((x,i)=>'<li><span class="guided-num">'+(i+1)+'</span><span>'+esc(x)+'</span></li>').join('');
+ [1,2,3].forEach(n=>$('#guidedProgress'+n)?.classList.toggle('active',n<=stage+1));
+ button.textContent=item.button;
+ root.classList.add('is-open');
+}
+function closeGuidedStart(){const root=$('#guidedStart');if(root)root.classList.remove('is-open');if(current&&sessions[current.session]?.questions[current.index]){const el=$('#missionReference');if(el)el.scrollIntoView({behavior:'smooth',block:'center'});}}
+function beginGuidedJourney(){
+ if(guidedStage===0){go('misiones');renderGuidedStart(1);return}
+ if(guidedStage===1){openChallenge(0,firstPending(0));renderGuidedStart(2);return}
+ closeGuidedStart();
+}
+$('#guidedContinue')?.addEventListener('click',beginGuidedJourney);
 function enterAsParticipant(rawName){
   const name=String(rawName||'').trim().replace(/\\s+/g,' ');
   const masterCode=String($('#masterTestCode')?.value||'').trim().toUpperCase();
@@ -973,6 +1024,7 @@ function enterAsParticipant(rawName){
     renderIdentity();
     renderReportOnInit();
     renderIdentity();
+    renderGuidedStart(0);
   }catch(e){
     console.error('NEXUS: acceso concedido; se omitió una actualización secundaria del dashboard.',e);
     const err=$('#loginError');err.textContent='Acceso concedido. Algunas tarjetas del dashboard no pudieron actualizarse; puedes continuar con la actividad.';err.hidden=false;
