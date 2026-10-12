@@ -1160,7 +1160,13 @@ function renderGuidedStart(stage){
  button.textContent=item.button;
  root.hidden=false;
  root.removeAttribute('hidden');
- root.style.cssText += ';display:flex!important;visibility:visible!important;opacity:1!important;z-index:2147483647!important;position:fixed!important;inset:0!important;pointer-events:auto!important';
+ root.style.setProperty('display','flex','important');
+ root.style.setProperty('visibility','visible','important');
+ root.style.setProperty('opacity','1','important');
+ root.style.setProperty('z-index','2147483647','important');
+ root.style.setProperty('position','fixed','important');
+ root.style.setProperty('inset','0','important');
+ root.style.setProperty('pointer-events','auto','important');
  root.classList.add('is-open');
  root.setAttribute('data-guided-stage',String(stage));
  root.setAttribute('aria-hidden','false');
@@ -1208,8 +1214,14 @@ function enterAsParticipant(rawName){
   $('#participantDisplay').textContent=name;
   const player=$('#playerDisplay');if(player)player.textContent=name;
 
-  // Mostrar bienvenida cuando el acceso empieza a cerrarse; repetir la activación después de ocultar la pantalla de acceso.
-  window.setTimeout(()=>{try{renderGuidedStart(0)}catch(e){console.error('NEXUS: no se pudo abrir la bienvenida.',e)}},230);
+  // Abrir la bienvenida en el mismo ciclo del acceso; no depender de un temporizador.
+  try {
+    renderGuidedStart(0);
+  } catch (e) {
+    console.error('NEXUS: no se pudo abrir la bienvenida.', e);
+    const err = $('#loginError');
+    if (err) { err.hidden = false; err.textContent = 'Acceso correcto, pero no se pudo abrir el tutorial. Recarga e inténtalo de nuevo.'; }
+  }
   try{
     persist();
     renderIdentity();
