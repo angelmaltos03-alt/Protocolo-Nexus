@@ -23,15 +23,27 @@ try {
 
   await page.locator('#guidedStart.is-open').waitFor({ state: 'visible', timeout: 10000 });
   const onboardingWelcome = await page.locator('#guidedTitle').innerText();
-  if (!onboardingWelcome.includes('Bienvenido a NEXUS')) throw new Error('Post-login welcome guide missing: ' + onboardingWelcome);
+  if (!onboardingWelcome.includes('entiende el dashboard')) throw new Error('Dashboard walkthrough missing: ' + onboardingWelcome);
+  const dashboardGuide = await page.locator('#guidedList').innerText();
+  if (!dashboardGuide.includes('Órdenes activas') || !dashboardGuide.includes('Incidencia crítica') || !dashboardGuide.includes('ETA')) {
+    throw new Error('Dashboard metric explanations missing: ' + dashboardGuide);
+  }
   await page.locator('#guidedContinue').click();
-  await page.locator('#guidedTitle').waitFor({ state: 'visible' });
-  const onboardingMissions = await page.locator('#guidedTitle').innerText();
-  if (!onboardingMissions.includes('primera sesión')) throw new Error('Mission navigation guide missing: ' + onboardingMissions);
+  const controlGuide = await page.locator('#guidedTitle').innerText();
+  if (!controlGuide.includes('Centro de control')) throw new Error('Exception queue walkthrough missing: ' + controlGuide);
+  const exceptionGuide = await page.locator('#guidedList').innerText();
+  if (!exceptionGuide.includes('Simular nueva incidencia') || !exceptionGuide.includes('Bitácora')) {
+    throw new Error('Exception actions not explained: ' + exceptionGuide);
+  }
   await page.locator('#guidedContinue').click();
-  await page.locator('#guidedTitle').waitFor({ state: 'visible' });
-  const onboardingChallenge = await page.locator('#guidedTitle').innerText();
-  if (!onboardingChallenge.includes('resolverás cada reto')) throw new Error('Challenge instructions guide missing: ' + onboardingChallenge);
+  const missionGuide = await page.locator('#guidedTitle').innerText();
+  if (!missionGuide.includes('Misiones')) throw new Error('Mission navigation guide missing: ' + missionGuide);
+  await page.locator('#guidedContinue').click();
+  const sessionGuide = await page.locator('#guidedTitle').innerText();
+  if (!sessionGuide.includes('Sesión 1')) throw new Error('Session selection guide missing: ' + sessionGuide);
+  await page.locator('#guidedContinue').click();
+  const challengeGuide = await page.locator('#guidedTitle').innerText();
+  if (!challengeGuide.includes('resolver y validar')) throw new Error('Challenge instructions guide missing: ' + challengeGuide);
   await page.locator('#guidedContinue').click();
   await page.locator('.answer-entry-panel').waitFor({ state: 'visible', timeout: 10000 }).catch(async error => { console.error('ANSWER_PANEL_DEBUG', JSON.stringify(await page.evaluate(() => ({title:document.querySelector('#challengeTitle')?.textContent,areaDisplay:getComputedStyle(document.querySelector('#challengeArea')).display,inputsHtml:document.querySelector('#challengeInputs')?.innerHTML,reference:document.querySelector('#missionReference')?.innerText,bodyEnd:document.body.innerText.slice(-1800)}))), 'PAGE_ERRORS', JSON.stringify(errors)); throw error; });
   await page.locator('.answer-option').first().waitFor({ state: 'visible', timeout: 10000 });
