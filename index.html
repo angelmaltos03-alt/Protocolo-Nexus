@@ -1049,14 +1049,14 @@ $('#calculateKpis').onclick=()=>{const n=+$('#calcScheduled').value,t=+$('#calcO
 ['quoteNorthQty','quoteNorthPrice','quoteNorthFreight','quoteNorthInsurance','quoteCenterQty','quoteCenterPrice','quoteCenterFreight'].forEach(id=>$('#'+id)?.addEventListener('input',()=>{if(!state.supplierScorecardValidated)return;state.supplierAppliedValidated=false;if($('#supplierSavingsAnswer'))$('#supplierSavingsAnswer').value='';if($('#supplierCostResult'))$('#supplierCostResult').classList.add('hidden');if($('#supplierAppliedStatus')){$('#supplierAppliedStatus').textContent='FASE 2 DESBLOQUEADA';$('#supplierAppliedStatus').className='status'}updateSupplierQuoteLive();persist()}));
 function syncSupplierChoiceButtons(){
  const selected=$('#chosenQuote')?.value||'';
- $('[data-quote-choice]').forEach(button=>{
+ $$('[data-quote-choice]').forEach(button=>{
   const active=button.dataset.quoteChoice===selected;
   button.setAttribute('aria-pressed',String(active));
   const check=button.querySelector('.supplier-pick-check');
   if(check)check.textContent=active?'✓':'';
  });
 }
-$('[data-quote-choice]').forEach(button=>button.addEventListener('click',()=>{
+$$('[data-quote-choice]').forEach(button=>button.addEventListener('click',()=>{
  const select=$('#chosenQuote');if(!select)return;
  select.value=button.dataset.quoteChoice;
  select.dispatchEvent(new Event('change',{bubbles:true}));
