@@ -324,6 +324,37 @@ html.login-locked,html.login-locked body{height:100%;overflow:hidden}
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const BASE_STORE='nexus-control-tower-v1';
 let STORE=BASE_STORE;
+/* Attach access handlers before dashboard initialization so a widget error cannot disable login. */
+document.addEventListener('click',event=>{
+  const button=event.target.closest('#loginSubmitButton');
+  if(!button)return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  try{enterAsParticipant($('#entryFullName').value)}catch(error){
+    console.error('NEXUS login error',error);
+    const gate=$('#loginGate');if(gate){gate.hidden=true}
+    document.documentElement.classList.remove('login-locked');
+    document.body.classList.remove('login-locked');
+    const err=$('#loginError');if(err){err.hidden=false;err.textContent='El acceso se abrió, pero falló la inicialización del expediente. Recarga la página y vuelve a intentarlo.'}
+  }
+},true);
+document.addEventListener('submit',event=>{
+  if(!event.target.matches('#participantLoginForm'))return;
+  event.preventDefault();
+  try{enterAsParticipant($('#entryFullName').value)}catch(error){
+    console.error('NEXUS login error',error);
+    const gate=$('#loginGate');if(gate){gate.hidden=true}
+    document.documentElement.classList.remove('login-locked');
+    document.body.classList.remove('login-locked');
+    const err=$('#loginError');if(err){err.hidden=false;err.textContent='El acceso se abrió, pero falló la inicialización del expediente. Recarga la página y vuelve a intentarlo.'}
+  }
+},true);
+document.addEventListener('input',event=>{
+  if(event.target.id==='entryFullName'){
+    const err=$('#loginError');if(err)err.hidden=true;
+    try{updateLoginPreview(event.target.value)}catch(e){console.warn('NEXUS login preview unavailable',e)}
+  }
+},true);
 const sessionDefs=[
 {id:1,title:'Fundamentos de compras y abastecimiento',short:'Fundamentos',date:'13 de septiembre de 2026',evidence:'Mapa conceptual de compras y abastecimiento',image:'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=85',story:'La planta recibe una demanda urgente. Debes distinguir necesidad, adquisición y abastecimiento para evitar decisiones de corto plazo que comprometan la operación.'},
 {id:2,title:'Proceso, tipos y principios de compras',short:'Proceso y principios',date:'20 de septiembre de 2026',evidence:'Diagrama de flujo del proceso de compras',image:'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=1000&q=85',story:'Una serie de órdenes tiene datos incompletos y dos proveedores presentan riesgos. Sigue el proceso, verifica documentos y toma decisiones éticas.'},
@@ -603,7 +634,6 @@ function updateLoginPreview(rawName){
   $('#loginResumeHint').textContent=hasSaved?'Se encontró progreso guardado para este nombre.':'El progreso aparecerá aquí al volver a ingresar.';
   $('#loginSubmitButton').childNodes[0].textContent=hasSaved?'Retomar protocolo ':'Iniciar experiencia inmersiva ';
 }
-$('#entryFullName').addEventListener('input',()=>{const err=$('#loginError');err.hidden=true;$('#entryFullName').removeAttribute('aria-invalid');updateLoginPreview($('#entryFullName').value)});
 function enterAsParticipant(rawName){
   const name=String(rawName||'').trim().replace(/\\s+/g,' ');
   if(!name||name.length<2){
@@ -646,8 +676,7 @@ function enterAsParticipant(rawName){
     const err=$('#loginError');err.textContent='Acceso concedido. Algunas tarjetas del dashboard no pudieron actualizarse; puedes continuar con la actividad.';err.hidden=false;
   }
 }
-$('#participantLoginForm').addEventListener('submit',event=>{event.preventDefault();enterAsParticipant($('#entryFullName').value)});
-$('#loginSubmitButton').addEventListener('click',event=>{event.preventDefault();enterAsParticipant($('#entryFullName').value)});
+
 document.documentElement.classList.add('login-locked');document.body.classList.add('login-locked');
 
 renderReportOnInit();
