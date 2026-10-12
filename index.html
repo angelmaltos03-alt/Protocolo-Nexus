@@ -413,41 +413,9 @@ html.login-locked,html.login-locked body{height:100%;overflow:hidden}
   </div>
 
 
-  <article class="panel activity-guide" aria-labelledby="dashboardHowToTitle" style="margin-top:14px">
-    <div class="activity-guide-head"><div><div class="eyebrow">TUTORIAL INTERACTIVO · SIGUE EL ORDEN</div><h3 id="dashboardHowToTitle">Tu primera ronda en NEXUS: qué mirar, por qué y qué hacer</h3><p>Dedica unos minutos a este recorrido antes de resolver misiones. Cada cifra es una señal: debes interpretarla, comprobarla en el módulo correcto y dejar evidencia de tu decisión.</p></div><span class="activity-guide-tag">1. OBSERVA · 2. COMPRUEBA · 3. ACTÚA</span></div>
-    <div class="activity-guide-note"><span class="activity-guide-note-dot"></span><span><strong>Cómo usar este tutorial:</strong> lee cada paso y pulsa “Ir al módulo”. Se abrirá la sección indicada. Revisa los datos allí y vuelve al tablero con “Inicio” en el menú lateral. NEXUS es una simulación académica; no contacta transportistas ni proveedores reales.</span></div>
-    <div class="activity-guide-grid">
-      <button class="activity-guide-step" data-goto="compras"><span class="activity-guide-number">01</span><span><strong>Órdenes activas · 12</strong><small><b>Qué significa:</b> pedidos abiertos que todavía necesitan seguimiento. <b>Por qué importa:</b> una orden sin confirmar o con fecha vencida puede dejar a producción sin material. <b>Qué hacer:</b> entra a Órdenes de compra; localiza la OC del caso; comprueba proveedor, material, cantidad, fecha prometida y estado; identifica qué dato falta y actualiza el estado solo cuando la evidencia lo justifique.</small></span><span class="activity-guide-arrow">Ir a Órdenes ↗</span></button>
-      <button class="activity-guide-step" data-goto="logistica"><span class="activity-guide-number">02</span><span><strong>En tránsito · 8 unidades</strong><small><b>Qué significa:</b> embarques que ya salieron y todavía no se reciben. <b>Por qué importa:</b> saber que un camión salió no confirma que llegará a tiempo. <b>Qué hacer:</b> abre Logística; busca el folio del embarque; compara origen, destino, checkpoint, avance y hora estimada de llegada (ETA). Si la ruta o ETA no coincide con la promesa, documenta la desviación.</small></span><span class="activity-guide-arrow">Ir a Logística ↗</span></button>
-      <button class="activity-guide-step" data-goto="indicadores"><span class="activity-guide-number">03</span><span><strong>Con retraso · revisar prioridad</strong><small><b>Qué significa:</b> una orden o entrega supera la fecha o el tiempo esperado. <b>Por qué importa:</b> puede provocar paro, compra urgente o costo adicional. <b>Qué hacer:</b> abre Indicadores; identifica qué entrega está retrasada; compara fecha prometida con ETA; determina qué material/área podría afectarse y registra una acción concreta con responsable o siguiente seguimiento. No confundas “en tránsito” con “a tiempo”.</small></span><span class="activity-guide-arrow">Ir a Indicadores ↗</span></button>
-      <button class="activity-guide-step" data-goto="control"><span class="activity-guide-number">04</span><span><strong>Incidencia crítica · prioridad alta</strong><small><b>Qué significa:</b> una situación que requiere atención prioritaria, no solo lectura. <b>Por qué importa:</b> dejarla abierta sin responsable puede agravar el riesgo operativo. <b>Qué hacer:</b> entra al Centro de control; abre la incidencia; lee folio y descripción; selecciona la acción propuesta; revisa el mensaje de confirmación y confirma únicamente si la acción es coherente. Después verifica que aparezca cerrada y en la bitácora.</small></span><span class="activity-guide-arrow">Ir al Centro de control ↗</span></button>
-    </div>
-    <div class="activity-guide-head" style="margin-top:18px"><div><div class="eyebrow">CASOS DEL TABLERO · NO PULSES SIN ANALIZAR</div><h3>Cómo resolver las “Últimas actualizaciones” paso a paso</h3><p>Lee el caso, entra al módulo correspondiente, comprueba los datos y después vuelve para ejecutar la acción. Los botones registran acciones simuladas.</p></div></div>
-    <div class="activity-guide-grid">
-      <button class="activity-guide-step" data-goto="control"><span class="activity-guide-number">A</span><span><strong>Retraso crítico de transporte · Tijuana → Planta Norte</strong><small><b>Primero:</b> abre Centro de control y localiza el folio TRK relacionado. <b>Comprueba:</b> destino, ETA y última actualización; si el ETA no está confirmado, no inventes una hora. <b>Decide:</b> coordinar seguimiento y una nueva confirmación con transporte. <b>Al terminar:</b> registra el seguimiento y revisa la bitácora. <b>Por qué:</b> Planta Norte necesita una estimación fiable para planear recepción y evitar desabasto.</small></span><span class="activity-guide-arrow">Abrir caso ↗</span></button>
-      <button class="activity-guide-step" data-goto="proveedores"><span class="activity-guide-number">B</span><span><strong>Proveedor sin confirmar · ACME Industrias · vence en 12 horas</strong><small><b>Primero:</b> abre Proveedores y localiza ACME. <b>Comprueba:</b> confirmación del pedido, fecha prometida, cantidad y contacto/estado disponible en el caso. <b>Decide:</b> solicitar/registrar confirmación o escalar si el plazo está en riesgo; no marques confirmado sin evidencia. <b>Al terminar:</b> vuelve al Centro de control y registra la resolución. <b>Por qué:</b> sin confirmación no existe certeza de suministro, aunque la orden esté capturada.</small></span><span class="activity-guide-arrow">Abrir Proveedores ↗</span></button>
-      <button class="activity-guide-step" data-goto="logistica"><span class="activity-guide-number">C</span><span><strong>Inventario bajo mínimo · 5 SKU</strong><small><b>Primero:</b> abre Inventario y revisa los cinco SKU señalados. <b>Comprueba:</b> existencia actual contra mínimo, consumo y plazo de reposición. <b>Decide:</b> prioriza los artículos con mayor riesgo de agotarse antes de que llegue el suministro y determina la reposición necesaria según los datos; no ordenes solo porque el número se vea bajo. <b>Al terminar:</b> registra la revisión. <b>Por qué:</b> el punto de reorden debe cubrir la demanda durante el plazo de entrega y el stock de seguridad.</small></span><span class="activity-guide-arrow">Abrir Inventario ↗</span></button>
-      <button class="activity-guide-step" data-goto="control"><span class="activity-guide-number">D</span><span><strong>Factura en revisión · diferencia de flete de $2,340 MXN</strong><small><b>Primero:</b> abre Centro de control y consulta el caso de factura. <b>Comprueba:</b> importe cotizado, tarifa acordada, cargos adicionales y evidencia del embarque. <b>Decide:</b> documentar la diferencia y solicitar aclaración antes de aprobar el importe discrepante. <b>Al terminar:</b> registra la verificación y deja el caso en revisión si falta soporte. <b>Por qué:</b> pagar sin conciliar puede generar sobrecostos y errores contables.</small></span><span class="activity-guide-arrow">Verificar caso ↗</span></button>
-    </div>
-    <div class="activity-guide-note"><span class="activity-guide-note-dot"></span><span><strong>Regla para todas las alertas:</strong> 1) identifica el problema; 2) abre el módulo indicado; 3) comprueba datos y evidencia; 4) elige una acción proporcional al riesgo; 5) confirma solo después de leer qué cambiará; 6) verifica el nuevo estado y la bitácora. Si falta información, deja constancia de que está pendiente en vez de inventarla o cerrar el caso sin fundamento.</span></div>
-  </article>
-
-  <article class="panel activity-guide" aria-labelledby="activityGuideTitle">
-    <div class="activity-guide-head">
-      <div>
-        <div class="eyebrow">BRIEFING DEL OPERADOR · LEE ANTES DE RESOLVER</div>
-        <h3 id="activityGuideTitle">Todo el dashboard forma parte de la actividad</h3>
-        <p>No es una pantalla decorativa: cada módulo contiene datos que debes observar, comparar y usar como evidencia para tomar decisiones en las misiones.</p>
-      </div>
-      <span class="activity-guide-tag">OBSERVAR → ANALIZAR → DECIDIR</span>
-    </div>
-    <div class="activity-guide-grid">
-      <button class="activity-guide-step" data-goto="indicadores"><span class="activity-guide-number">01</span><span><strong>Indicadores y alertas</strong><small>Detecta retrasos, riesgos, OTD, OTIF e inventario crítico. Prioriza qué necesita atención.</small></span><span class="activity-guide-arrow">↗</span></button>
-      <button class="activity-guide-step" data-goto="compras"><span class="activity-guide-number">02</span><span><strong>Órdenes y proveedores</strong><small>Compara fechas promesa, materiales, estados y desempeño antes de elegir una acción.</small></span><span class="activity-guide-arrow">↗</span></button>
-      <button class="activity-guide-step" data-goto="logistica"><span class="activity-guide-number">03</span><span><strong>Rutas y embarques</strong><small>Interpreta origen, destino, avance, ETA e incidencias para proteger la continuidad.</small></span><span class="activity-guide-arrow">↗</span></button>
-      <button class="activity-guide-step" data-goto="misiones"><span class="activity-guide-number">04</span><span><strong>Misión y costo de flete</strong><small>Usa los datos del caso y la calculadora. Valida la respuesta y avanza solo cuando sea correcta.</small></span><span class="activity-guide-arrow">↗</span></button>
-    </div>
-    <div class="activity-guide-note"><span class="activity-guide-note-dot"></span><span><strong>Regla de trabajo:</strong> antes de responder, revisa el tablero completo. Las cifras y escenarios son simulados, pero debes tratarlos como una operación real, justificar la decisión y comprobar el resultado.</span></div>
+  <article class="panel mission-first-callout" style="margin-top:14px;border:1px solid #1e756c;background:linear-gradient(110deg,rgba(10,65,62,.55),rgba(7,20,32,.96));padding:20px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap">
+    <div style="min-width:240px;flex:1"><div class="eyebrow" style="color:#5bd8d0">SIGUIENTE PASO OBLIGATORIO</div><h2 style="font-size:22px;margin:7px 0">Tu actividad se realiza en Misiones</h2><p style="margin:0;color:var(--muted);max-width:760px">El tablero es tu fuente de información, pero no es la entrega. Para completar la actividad, abre Misiones, sigue cada reto en orden, consulta el módulo que se indica y valida tu respuesta. Solo una respuesta correcta desbloquea el siguiente reto.</p></div>
+    <button class="btn btn-primary" type="button" data-goto="misiones" style="white-space:nowrap">Ir a Misiones y continuar →</button>
   </article>
 
   <div class="nexus-work-grid">
@@ -1198,13 +1166,13 @@ function enterAsParticipant(rawName){
   $('#participantDisplay').textContent=name;
   const player=$('#playerDisplay');if(player)player.textContent=name;
 
+  // Programar la bienvenida fuera de las actualizaciones del dashboard: un error secundario no debe impedir el onboarding.
+  window.setTimeout(()=>{try{renderGuidedStart(0)}catch(e){console.error("NEXUS: no se pudo mostrar la bienvenida guiada.",e)}},220);
   try{
     persist();
     renderIdentity();
     renderReportOnInit();
     renderIdentity();
-    // Show onboarding after the login overlay begins closing; keep the welcome above every screen.
-    window.setTimeout(()=>renderGuidedStart(0),220);
   }catch(e){
     console.error('NEXUS: acceso concedido; se omitió una actualización secundaria del dashboard.',e);
     const err=$('#loginError');err.textContent='Acceso concedido. Algunas tarjetas del dashboard no pudieron actualizarse; puedes continuar con la actividad.';err.hidden=false;
