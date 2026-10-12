@@ -554,20 +554,44 @@ function renderMissionDashboard(q){
  $('#missionDashboardOpenModule').onclick=()=>{go(g.view);updateActivityDock()};
  $('#missionDashboardShowHint').onclick=()=>{const x=$('#missionDashboardHint');x.hidden=!x.hidden;$('#missionDashboardShowHint').textContent=x.hidden?'Ver pista de análisis':'Ocultar pista'};$('#missionDashboardShowProcedure').onclick=()=>{const x=$('#missionDashboardReveal');x.classList.toggle('visible');$('#missionDashboardShowProcedure').textContent=x.classList.contains('visible')?'Ocultar procedimiento':'Ver procedimiento'};
 }
-function renderChallenge(){current.choice=undefined;const s=sessions[current.session],q=s.questions[current.index];if(!q)return;current.tries=state.attempts[q.id]?.count||0;current.answered=!!state.completed[q.id];$('#challengeEyebrow').textContent=`SESIÓN ${current.session+1} · RETO ${current.index+1} DE 8`;$('#challengeTitle').textContent=q.title;$('#challengePrompt').textContent=q.prompt;$('#challengeScenario').textContent=q.scenario;renderMissionDashboard(q);renderMissionReference(q);$('#briefingImage').src=q.image||s.image;$('#briefingImage').alt=q.type==='cálculo'?'Contexto visual del reto de cálculo':s.title;$('#challengeFeedback').style.display='none';$('#challengeFeedback').className='feedback';$('#challengeInputs').innerHTML='';try{
- const isCalc=String(q.type||'').toLocaleLowerCase('es-MX').includes('cálculo')||String(q.type||'').toLocaleLowerCase('es-MX').includes('calculo');
+function renderAnswerEntry(q){
+ const host=$('#challengeInputs');if(!host)return;
+ host.hidden=false;host.style.display='block';host.innerHTML='';
+ const type=String(q.type||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const isCalc=type.includes('calculo');
+ const commonStart='<section class="answer-entry-panel" style="display:grid!important;visibility:visible!important;opacity:1!important"><div class="answer-entry-head"><span class="answer-entry-kicker">PASO 2 · ENTREGA TU RESPUESTA</span>';
+ let html='';
  if(isCalc){
-  $('#challengeInputs').innerHTML=`<section class="answer-entry-panel" style="display:grid!important;visibility:visible!important"><div class="answer-entry-head"><span class="answer-entry-kicker">PASO 2 · ENTREGA TU RESULTADO</span><h3>Tu respuesta</h3><p>Escribe el resultado que obtuviste al trabajar con el módulo. Captura solo el número, sin símbolo de moneda ni separadores de miles.</p></div><div class="form-field"><label for="numericAnswer">Resultado final (${esc(q.unit||'valor')})</label><input id="numericAnswer" type="number" step="any" inputmode="decimal" aria-label="Tu respuesta numérica" placeholder="Escribe aquí tu resultado" ${current.answered?'disabled':''}></div><p class="hint">${esc(q.hint||'Comprueba los datos del caso antes de validar.')}</p><div class="answer-entry-instruction">Cuando termines, pulsa <b>Validar respuesta</b>. Si el resultado no coincide, revisa la retroalimentación, corrige el cálculo e inténtalo de nuevo.</div></section>`;
+  html=commonStart+'<h3>Tu respuesta</h3><p>Escribe aquí el resultado que obtuviste al trabajar con el módulo. Captura solo el número, sin símbolo de moneda ni comas.</p></div><div class="form-field"><label for="numericAnswer">Tu respuesta · '+esc(q.unit||'resultado')+'</label><input id="numericAnswer" type="number" step="any" inputmode="decimal" aria-label="Tu respuesta numérica" placeholder="ESCRIBE AQUÍ TU RESULTADO"></div><p class="hint">'+esc(q.hint||'Comprueba los datos del caso antes de validar.')+'</p><div class="answer-entry-instruction">Cuando termines, pulsa <b>Validar respuesta</b>. Si el resultado no coincide, revisa la retroalimentación y vuelve a intentarlo.</div></section>';
  }else{
   const opts=Array.isArray(q.options)?q.options:[];
-  $('#challengeInputs').innerHTML=`<section class="answer-entry-panel" style="display:grid!important;visibility:visible!important"><div class="answer-entry-head"><span class="answer-entry-kicker">PASO 2 · ENTREGA TU RESPUESTA</span><h3>Selecciona tu decisión</h3><p>Lee las opciones y selecciona una. Después pulsa “Validar respuesta”.</p></div><div class="answer-list">${opts.map((o,i)=>`<button type="button" class="answer-option" data-choice="${i}" ${current.answered?'disabled':''}><span class="letter">${String.fromCharCode(65+i)}</span><span>${esc(o)}</span></button>`).join('')}</div>${opts.length?'':'<p class="hint">No se cargaron opciones para este reto. Escribe tu respuesta en el campo siguiente.</p><div class="form-field"><label for="fallbackAnswer">Tu respuesta</label><input id="fallbackAnswer" type="text" aria-label="Tu respuesta" placeholder="Escribe aquí tu respuesta"></div>'}<div class="answer-entry-instruction">Al terminar, pulsa <b>Validar respuesta</b>. Si es incorrecta, revisa la retroalimentación e inténtalo otra vez.</div></section>`;
-  $('#challengeInputs').querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{if(current.answered)return;$('#challengeInputs').querySelectorAll('[data-choice]').forEach(x=>{x.style.borderColor='';x.dataset.selected='false'});b.dataset.selected='true';b.style.borderColor='var(--green,#35c98b)';current.choice=Number(b.dataset.choice)});
+  const optionsHtml=opts.map((o,i)=>{const label=typeof o==='string'?o:(o?.text??o?.label??String(o??''));return '<button type="button" class="answer-option" data-choice="'+i+'" '+(current.answered?'disabled':'')+'><span class="letter">'+String.fromCharCode(65+i)+'</span><span>'+esc(label)+'</span></button>'}).join('');
+  html=commonStart+'<h3>Selecciona tu respuesta</h3><p>Lee las opciones y pulsa una para marcarla. La opción elegida quedará resaltada.</p></div>'+(opts.length?'<div class="answer-list">'+optionsHtml+'</div>':'<div class="form-field"><label for="fallbackAnswer">Tu respuesta</label><input id="fallbackAnswer" type="text" aria-label="Tu respuesta" placeholder="ESCRIBE AQUÍ TU RESPUESTA"></div>')+'<div class="answer-entry-instruction">Después pulsa <b>Validar respuesta</b>. Si es incorrecta, revisa la retroalimentación e inténtalo otra vez.</div></section>';
  }
-}catch(answerRenderError){
- console.error('NEXUS answer panel render failed',answerRenderError);
- $('#challengeInputs').innerHTML='<section class="answer-entry-panel" style="display:grid!important;visibility:visible!important"><div class="answer-entry-head"><span class="answer-entry-kicker">PASO 2 · ENTREGA TU RESPUESTA</span><h3>Escribe tu respuesta</h3><p>Captura aquí tu resultado o decisión y después pulsa “Validar respuesta”.</p></div><div class="form-field"><label for="fallbackAnswer">Tu respuesta</label><input id="fallbackAnswer" type="text" aria-label="Tu respuesta" placeholder="Escribe aquí tu respuesta"></div></section>';
+ host.innerHTML=html;
+ host.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{if(current.answered)return;host.querySelectorAll('[data-choice]').forEach(x=>{x.style.borderColor='';x.dataset.selected='false'});b.dataset.selected='true';b.style.borderColor='var(--green,#35c98b)';b.style.background='rgba(42,174,119,.18)';current.choice=Number(b.dataset.choice)});
+ if(current.answered)host.querySelectorAll('button,input').forEach(x=>x.disabled=true);
 }
-$('#submitAnswer').style.display=current.answered?'none':'inline-flex';$('#nextChallenge').style.display=current.answered?'inline-flex':'none';setAdvanceButtonLabel();$('#skipChallenge').style.display=current.tries>=2&&!current.answered?'inline-flex':'none';$('#backToMissions').style.display='inline-flex';$('#attemptStatus').textContent=`Intentos de este reto: ${current.tries}`;const done=s.questions.filter(x=>state.completed[x.id]).length;$('#challengeProgressBar').style.width=`${done/8*100}%`;$('#challengeProgressText').textContent=`${done} de 8 retos concluidos`;$('#challengeNodes').innerHTML=s.questions.map((x,i)=>`<button class="node ${state.completed[x.id]?(state.skipped.includes(x.id)?'skipped':'done'):i===current.index?'current':''}" data-node="${i}" title="${esc(x.title)}">${i+1}</button>`).join('');$('#challengeNodes').querySelectorAll('[data-node]').forEach(b=>b.onclick=()=>{const ix=+b.dataset.node;if(state.completed[s.questions[ix].id]){current.index=ix;renderChallenge()}else if(ix===firstPending(current.session)){current.index=ix;renderChallenge()}else toast('Resuelve los retos en orden para mantener la secuencia de la misión.')});$('#operatorStory').textContent=s.story;if(current.answered){showFeedback(true,`Reto ya registrado. ${q.explanation}`);$('#challengeInputs').querySelectorAll('button,input').forEach(x=>x.disabled=true)}renderMissionCards();updateActivityDock();}
+function renderChallenge(){
+ current.choice=undefined;const s=sessions[current.session],q=s.questions[current.index];if(!q)return;
+ current.tries=state.attempts[q.id]?.count||0;current.answered=!!state.completed[q.id];
+ // Render the response control first, so a failure in an unrelated dashboard widget cannot leave the learner without a place to answer.
+ renderAnswerEntry(q);
+ $('#challengeEyebrow').textContent=`SESIÓN ${current.session+1} · RETO ${current.index+1} DE 8`;
+ $('#challengeTitle').textContent=q.title;$('#challengePrompt').textContent=q.prompt;$('#challengeScenario').textContent=q.scenario;
+ renderMissionDashboard(q);renderMissionReference(q);
+ $('#briefingImage').src=q.image||s.image;$('#briefingImage').alt=String(q.type||'').toLowerCase().includes('cálculo')?'Contexto visual del reto de cálculo':s.title;
+ $('#challengeFeedback').style.display='none';$('#challengeFeedback').className='feedback';
+ $('#submitAnswer').style.display=current.answered?'none':'inline-flex';$('#nextChallenge').style.display=current.answered?'inline-flex':'none';setAdvanceButtonLabel();
+ $('#skipChallenge').style.display=current.tries>=2&&!current.answered?'inline-flex':'none';$('#backToMissions').style.display='inline-flex';
+ $('#attemptStatus').textContent=`Intentos de este reto: ${current.tries}`;
+ const done=s.questions.filter(x=>state.completed[x.id]).length;$('#challengeProgressBar').style.width=`${done/8*100}%`;$('#challengeProgressText').textContent=`${done} de 8 retos concluidos`;
+ $('#challengeNodes').innerHTML=s.questions.map((x,i)=>`<button class="node ${state.completed[x.id]?(state.skipped.includes(x.id)?'skipped':'done'):i===current.index?'current':''}" data-node="${i}" title="${esc(x.title)}">${i+1}</button>`).join('');
+ $('#challengeNodes').querySelectorAll('[data-node]').forEach(b=>b.onclick=()=>{const ix=+b.dataset.node;if(state.completed[s.questions[ix].id]){current.index=ix;renderChallenge()}else if(ix===firstPending(current.session)){current.index=ix;renderChallenge()}else toast('Resuelve los retos en orden para mantener la secuencia de la misión.')});
+ $('#operatorStory').textContent=s.story;
+ if(current.answered){showFeedback(true,`Reto ya registrado. ${q.explanation}`);$('#challengeInputs').querySelectorAll('button,input').forEach(x=>x.disabled=true)}
+ renderMissionCards();updateActivityDock();
+}
 function showFeedback(ok,msg){const el=$('#challengeFeedback');el.style.display='block';el.className='feedback'+(ok?' success':' error');el.textContent=msg}
 function setAdvanceButtonLabel(){const b=$('#nextChallenge');if(!b||!current)return;if(current.index<7)b.textContent='Avanzar al siguiente reto →';else if(current.session<2)b.textContent='Sesión completada · Avanzar a sesión '+(current.session+2)+' →';else b.textContent='Finalizar actividad y ver expediente →';}
 function advanceChallenge(){
@@ -588,23 +612,58 @@ function advanceChallenge(){
     toast('Actividad completada. Revisa y descarga tu expediente.');
   }else toast('Completa todos los retos correctamente para cerrar la actividad.');
 }
-function submitChallenge(){const s=sessions[current.session],q=s.questions[current.index];if(!q||current.answered)return;let ok=false,submitted='';if(q.type==='cálculo'){const val=$('#numericAnswer')?.value;if(val===''||val===undefined){toast('Introduce un resultado antes de validar.');return}submitted=val;ok=Math.abs(Number(val)-Number(q.answer))<0.011}else{if(current.choice===undefined){toast('Selecciona una opción para continuar.');return}const o=q.options[current.choice];submitted=`${String.fromCharCode(65+current.choice)}. ${o.text}`;ok=!!o.correct}current.tries++;state.attempts[q.id]=state.attempts[q.id]||{count:0,entries:[]};state.attempts[q.id].count=current.tries;state.attempts[q.id].entries.push({value:submitted,correct:ok,time:new Date().toISOString()});if(ok){current.answered=true;state.completed[q.id]=true;state.answers[q.id]={value:submitted,correct:true,tries:current.tries};const pts=current.tries===1?20:12;state.points+=pts;if(current.tries===1)state.first++;logAction('Reto resuelto',`${s.short} · ${q.title}`,`+${pts} puntos`);persist();showFeedback(true,`Respuesta validada. +${pts} puntos. ${q.explanation}`);$('#challengeInputs').querySelectorAll('button,input').forEach(x=>x.disabled=true);$('#submitAnswer').style.display='none';$('#nextChallenge').style.display='inline-flex';setAdvanceButtonLabel();$('#skipChallenge').style.display='none';renderDashboard();renderMissionCards();renderReport();toast(`Respuesta correcta. Se registraron ${pts} puntos.`);if(s.questions.every(x=>state.completed[x.id])){if(current.session<2)toast(`Sesión ${current.session+1} completada. La siguiente sesión está disponible.`);else toast('Las tres sesiones están completadas. Genera tu expediente PDF.')}}else{
+function submitChallenge(){
+ const s=sessions[current.session],q=s?.questions[current.index];if(!q||current.answered)return;
+ const type=String(q.type||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+ const isCalc=type.includes('calculo');
+ let ok=false,submitted='';
+ if(isCalc){
+  const input=$('#numericAnswer')||$('#fallbackAnswer');const val=input?.value?.trim();
+  if(val===''||val===undefined){toast('Escribe tu resultado en el campo “Tu respuesta” antes de validar.');input?.focus();return}
+  submitted=val;ok=Number.isFinite(Number(val))&&Math.abs(Number(val)-Number(q.answer))<0.011;
+ }else{
+  const opts=Array.isArray(q.options)?q.options:[];
+  let picked=current.choice;
+  const freeText=$('#fallbackAnswer')?.value?.trim();
+  if(picked===undefined&&freeText){
+   const raw=freeText.toLocaleLowerCase('es-MX').trim();
+   const numericIndex=/^[1-9]$/.test(raw)?Number(raw)-1:-1;
+   const letterIndex=/^[a-d]$/.test(raw)?raw.charCodeAt(0)-97:-1;
+   const target=raw.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ');
+   const textIndex=opts.findIndex(o=>String(typeof o==='string'?o:(o?.text??o?.label??'')).toLocaleLowerCase('es-MX').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim()===target);
+   picked=textIndex>=0?textIndex:numericIndex>=0&&numericIndex<opts.length?numericIndex:letterIndex>=0&&letterIndex<opts.length?letterIndex:undefined;
+  }
+  if(picked===undefined||!Number.isInteger(Number(picked))){toast('Selecciona una opción de respuesta antes de validar.');$('#challengeInputs').querySelector('.answer-option')?.focus();return}
+  picked=Number(picked);
+  if(opts.length){
+   const o=opts[picked];if(o===undefined){toast('Selecciona una opción válida.');return}
+   const label=typeof o==='string'?o:(o?.text??o?.label??String(o));
+   submitted=`${String.fromCharCode(65+picked)}. ${label}`;
+   if(o&&typeof o==='object'&&typeof o.correct==='boolean')ok=o.correct;
+   else if(typeof q.answer==='number')ok=picked===q.answer;
+   else ok=String(label).trim().toLocaleLowerCase('es-MX')===String(q.answer).trim().toLocaleLowerCase('es-MX');
+  }else{
+   if(!freeText){toast('Escribe tu respuesta en el campo “Tu respuesta” antes de validar.');$('#fallbackAnswer')?.focus();return}
+   submitted=freeText;
+   ok=String(freeText).trim().toLocaleLowerCase('es-MX')===String(q.answer).trim().toLocaleLowerCase('es-MX');
+  }
+ }
+ current.tries++;state.attempts[q.id]=state.attempts[q.id]||{count:0,entries:[]};state.attempts[q.id].count=current.tries;state.attempts[q.id].entries.push({value:submitted,correct:ok,time:new Date().toISOString()});
+ if(ok){
+  current.answered=true;state.completed[q.id]=true;state.answers[q.id]={value:submitted,correct:true,tries:current.tries};
+  const pts=current.tries===1?20:12;state.points+=pts;if(current.tries===1)state.first++;logAction('Reto resuelto',`${s.short} · ${q.title}`,`+${pts} puntos`);persist();
+  showFeedback(true,`Respuesta validada. +${pts} puntos. ${q.explanation}`);$('#challengeInputs').querySelectorAll('button,input').forEach(x=>x.disabled=true);
+  $('#submitAnswer').style.display='none';$('#nextChallenge').style.display='inline-flex';setAdvanceButtonLabel();$('#skipChallenge').style.display='none';
+  renderDashboard();renderMissionCards();renderReport();toast(`Respuesta correcta. Se registraron ${pts} puntos.`);
+  if(s.questions.every(x=>state.completed[x.id])){if(current.session<2)toast(`Sesión ${current.session+1} completada. La siguiente sesión está disponible.`);else toast('Las tres sesiones están completadas. Genera tu expediente PDF.')}
+ }else{
   $('#nextChallenge').style.display='none';$('#submitAnswer').style.display='inline-flex';state.errors++;
   const coaching=genericWrongHints[q.id]||q.hint||'Revisa los datos del caso y el criterio de decisión antes de intentar de nuevo.';
-  const msg='Todavía no es correcto. '+coaching+' Intento '+current.tries+'. '+(current.tries>=2?'Abre “Ver pista de análisis” en el panel operativo y comprueba el procedimiento antes de volver a validar.':'Vuelve a leer los cifras y condiciones; después inténtalo otra vez.');
-  logAction('Respuesta incorrecta',`${q.title} · intento ${current.tries}`,'Sin puntos; requiere revisión');persist();
-  showFeedback(false,msg);
-  $('#skipChallenge').style.display='none';
-  $('#attemptStatus').textContent=`Intentos de este reto: ${current.tries}`;
+  const msg='Todavía no es correcto. '+coaching+' Intento '+current.tries+'. '+(current.tries>=2?'Abre “Ver pista de análisis” en el panel operativo y comprueba el procedimiento antes de volver a validar.':'Vuelve a leer las cifras y condiciones; después inténtalo otra vez.');
+  logAction('Respuesta incorrecta',`${q.title} · intento ${current.tries}`,'Sin puntos; requiere revisión');persist();showFeedback(false,msg);$('#skipChallenge').style.display='none';$('#attemptStatus').textContent=`Intentos de este reto: ${current.tries}`;
   const hint=$('#missionDashboardHint');if(hint){hint.hidden=false;$('#missionDashboardShowHint').textContent='Ocultar pista'}
-  if(q.type==='cálculo'&&current.tries>=2){
-    const reveal=$('#missionDashboardReveal');if(reveal)reveal.classList.add('visible');
-  }
-  if(q.type!=='cálculo'){
-    q.options.sort(()=>Math.random()-.5);renderChallenge();showFeedback(false,msg);
-    $('#skipChallenge').style.display='none';
-    const hint2=$('#missionDashboardHint');if(hint2){hint2.hidden=false;$('#missionDashboardShowHint').textContent='Ocultar pista'}
-  }
+  if(isCalc&&current.tries>=2){const reveal=$('#missionDashboardReveal');if(reveal)reveal.classList.add('visible')}
+  if(!isCalc){renderChallenge();showFeedback(false,msg);$('#skipChallenge').style.display='none';const hint2=$('#missionDashboardHint');if(hint2){hint2.hidden=false;$('#missionDashboardShowHint').textContent='Ocultar pista'}}
  }
 }
 function showRetryGuidance(){const s=sessions[current.session],q=s.questions[current.index];if(!q||current.answered)return;const guide=q.hint||"Vuelve a leer el escenario y separa los datos confirmados de los supuestos. Identifica qué indicador o condición del dashboard es pertinente y comprueba el cálculo o criterio antes de validar.";showFeedback(false,"Orientación para revisar el caso: "+guide+" El reto no se da por aprobado hasta validar una respuesta correcta.");$('#nextChallenge').style.display='none';$('#submitAnswer').style.display='inline-flex';}
