@@ -26,9 +26,73 @@ html,body{background:#050e19}body{font-size:13px}.sidebar{width:144px;background
 @media(max-width:760px){.sidebar{width:0;overflow:hidden;transition:width .2s}.sidebar.mobile-open{width:236px;box-shadow:20px 0 60px #0008}.sidebar.mobile-open .brand{height:66px;padding:0 14px;justify-content:flex-start}.sidebar.mobile-open .brand-text,.sidebar.mobile-open .nav-label,.sidebar.mobile-open .nav button .nav-text,.sidebar.mobile-open .site-card,.sidebar.mobile-open .sidebar-footer .foot-text{display:block}.sidebar.mobile-open .nav{padding:0 8px}.sidebar.mobile-open .nav button{justify-content:flex-start;padding:10px 9px}.sidebar.mobile-open .sidebar-bottom{padding:8px}.sidebar.mobile-open .sidebar-footer{justify-content:center}.main{margin-left:0}.mobile-toggle{display:grid}.topbar{height:58px;padding:0 10px;gap:7px}.mobile-brand{display:flex}.org{display:none}.top-actions{gap:8px;margin-left:auto}.protocol-top-button{display:none}.topbar .profile{display:none}.search{flex:1}.search input{font-size:10px;padding:9px 7px 9px 30px}.search svg{left:9px;top:10px}.content{padding:12px 10px 25px}.nexus-pagebar{align-items:flex-start;flex-direction:column;gap:10px;margin-bottom:11px}.nexus-pagebar h1{font-size:23px}.nexus-pagebar p{font-size:10px}.nexus-pagebar .heading-actions{width:100%;justify-content:space-between}.nexus-pagebar .heading-actions .status{font-size:8px}.nexus-overview{grid-template-columns:1fr;gap:8px}.nexus-hero{height:265px;min-height:265px}.nexus-hero .hero-copy{left:16px;right:14px;top:15px;bottom:12px}.nexus-hero .hero-copy h2{font-size:28px;max-width:340px}.nexus-hero .hero-copy p{font-size:10px;max-width:310px}.nexus-hero .hero-bottom{margin-top:auto}.nexus-hero .small-note{display:none}.nexus-mini-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.nexus-mini-kpi{min-height:75px;padding:9px}.mini-kpi-icon{width:28px;height:28px;flex-basis:28px;font-size:17px}.nexus-mini-kpi span{font-size:8px}.nexus-mini-kpi strong{font-size:21px}.nexus-mini-kpi small{font-size:7px}.nexus-route-updates{grid-template-columns:1fr}.nexus-map-panel .panel-header{padding:10px}.nexus-route-map{height:165px;min-height:165px}.nexus-updates-panel{display:block}.nexus-updates-panel .panel-body{padding:0 10px}.nexus-updates-panel .alert-item{padding:9px 2px}.nexus-work-grid{grid-template-columns:1fr;gap:8px}.nexus-orders-panel .table-scroll{max-height:280px}.nexus-orders-panel table{min-width:610px}.nexus-kpi-panel .panel-body{padding:8px}.nexus-performance-cards{grid-template-columns:repeat(2,minmax(0,1fr));padding:8px;gap:6px}.nexus-performance-cards>div{padding:9px}.nexus-chart-body .chart-wrap{height:120px;min-height:120px}.nexus-suppliers-panel{grid-column:auto}.nexus-suppliers-panel .supplier-list{grid-template-columns:1fr}.nexus-mission-grid{grid-template-columns:1fr;gap:8px}.mission-banner,.mission-banner-content{min-height:220px}.nexus-mission-facts strong{font-size:9px}.nexus-cost-inputs{padding:10px;gap:8px}.nexus-cost-summary{padding:0 10px;gap:0 10px}.nexus-cost-summary span{font-size:8px}.nexus-cost-summary strong{font-size:9px}.nexus-progress-panel{display:block;grid-column:auto}.nexus-progress-panel .panel-header{grid-column:auto}.nexus-progress-panel .session-progress{border-right:0}.nexus-progress-panel .score-band{border-right:0;justify-content:space-between}.nexus-progress-panel .nexus-identity{border-top:1px solid #1d3042}.nexus-work-grid .panel-header{padding:11px}.nexus-work-grid .panel-header h3{font-size:11px}.nexus-work-grid .panel-header small{font-size:8px}.topbar .icon-button{width:32px;height:32px;flex-shrink:0}.datebox{display:none}}
 @media(max-width:380px){.nexus-hero .hero-copy h2{font-size:25px}.nexus-mini-kpi{gap:6px;padding:8px 6px}.nexus-mini-kpi span{white-space:normal}.nexus-pagebar .heading-actions{gap:6px}.nexus-pagebar .heading-actions .status{font-size:7px;padding:5px}.nexus-pagebar .btn{font-size:9px;padding:8px}.nexus-hero .hero-copy h2{font-size:25px}.nexus-cost-summary{grid-template-columns:1fr}.nexus-cost-summary .nexus-cost-total{grid-column:auto}.nexus-performance-cards strong{font-size:18px}}
 
+
+/* Required participant entry screen */
+html.login-locked,html.login-locked body{height:100%;overflow:hidden}
+#loginGate{position:fixed;inset:0;z-index:99999;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(340px,.85fr);align-items:center;gap:clamp(25px,6vw,90px);padding:clamp(24px,6vw,88px);overflow:auto;background:radial-gradient(ellipse at 18% 18%,#123e5d99,transparent 35%),radial-gradient(ellipse at 88% 86%,#064e4788,transparent 32%),linear-gradient(130deg,#050d18 0%,#071421 55%,#081b2a 100%);color:#eaf4fc;opacity:1;transition:opacity .28s ease}
+#loginGate[hidden]{display:none}
+#loginGate:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.2;background-image:linear-gradient(#6ba2c21c 1px,transparent 1px),linear-gradient(90deg,#6ba2c21c 1px,transparent 1px);background-size:44px 44px;mask-image:linear-gradient(110deg,#000,transparent 76%)}
+#loginGate .login-brand,#loginGate .login-card{position:relative;z-index:1}
+#loginGate .login-brand{max-width:680px}
+#loginGate .login-brand-top{display:flex;align-items:center;gap:13px;margin-bottom:clamp(40px,8vh,90px)}
+#loginGate .login-mark{width:48px;height:48px;display:grid;place-items:center;border:1px solid #4c9dc4;border-radius:13px;background:linear-gradient(145deg,#173d59,#0b1c2c);font:800 22px Manrope,Arial,sans-serif;color:#81d6fa;box-shadow:0 0 35px #278dd52a,inset 0 0 20px #42a8e526}
+#loginGate .login-wordmark strong{display:block;font:800 22px Manrope,Arial,sans-serif;letter-spacing:.16em}
+#loginGate .login-wordmark span{display:block;color:#8da4b9;font-size:10px;letter-spacing:.28em;margin-top:5px}
+#loginGate .login-eyebrow{display:inline-flex;align-items:center;gap:9px;padding:7px 10px;border:1px solid #24506a;border-radius:6px;background:#0b2435;color:#8fe6dc;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}
+#loginGate .login-eyebrow:before{content:"";width:6px;height:6px;border-radius:50%;background:#40ddaa;box-shadow:0 0 12px #40ddaa}
+#loginGate .login-brand h1{max-width:650px;margin:20px 0 18px;font:800 clamp(38px,5.4vw,76px)/.98 Manrope,Arial,sans-serif;letter-spacing:-.065em}
+#loginGate .login-brand h1 em{font-style:normal;color:#72cbef}
+#loginGate .login-brand>p{max-width:520px;color:#a6bbce;font-size:clamp(13px,1.15vw,16px);line-height:1.8;margin:0}
+#loginGate .login-systems{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px}
+#loginGate .login-systems span{padding:9px 11px;border:1px solid #1e354a;border-radius:7px;background:#091725aa;color:#a4b7c8;font-size:10px}
+#loginGate .login-bottom{display:flex;align-items:center;gap:10px;margin-top:clamp(42px,8vh,80px);color:#657f95;font-size:10px;letter-spacing:.05em}
+#loginGate .login-bottom:before{content:"";width:28px;height:1px;background:#2d6581}
+#loginGate .login-card{width:100%;max-width:480px;justify-self:end;padding:clamp(24px,3.2vw,42px);border:1px solid #2b455a;border-radius:20px;background:linear-gradient(145deg,#0e1d2ced,#091522f5);box-shadow:0 28px 90px #0007,inset 0 1px #ffffff0b;backdrop-filter:blur(20px)}
+#loginGate .card-overline{font-size:10px;text-transform:uppercase;letter-spacing:.18em;font-weight:800;color:#75d5f0}
+#loginGate .login-card h2{margin:14px 0 10px;font:800 clamp(25px,2.6vw,32px)/1.15 Manrope,Arial,sans-serif;letter-spacing:-.04em}
+#loginGate .login-card .login-intro{color:#91a8bb;font-size:12px;line-height:1.75;margin:0 0 29px}
+#loginGate .field-label{display:block;color:#dbe7f1;font-size:11px;font-weight:700;margin-bottom:9px}
+#entryFullName{display:block;width:100%;padding:15px 14px;border:1px solid #2c4d65;border-radius:10px;background:#071320;color:#f1f8ff;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+#entryFullName::placeholder{color:#5f7488}
+#entryFullName:focus{border-color:#54bde8;box-shadow:0 0 0 3px #249fe51c}
+#loginGate .login-hint{font-size:10px;color:#738ba0;line-height:1.65;margin:10px 0 18px}
+#loginGate .login-submit{width:100%;display:flex;align-items:center;justify-content:center;gap:11px;padding:15px 16px;border:1px solid #50b4d8;border-radius:10px;background:linear-gradient(110deg,#1275ba,#239bc2);box-shadow:0 10px 24px #067db333;color:white;font-size:12px;font-weight:800;letter-spacing:.02em;transition:filter .2s,transform .2s}
+#loginGate .login-submit:hover{filter:brightness(1.12);transform:translateY(-1px)}
+#loginGate .login-submit svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+#loginGate .login-error{font-size:11px;line-height:1.5;color:#ff9fa9;margin:10px 0 0}
+#loginGate .login-security{display:flex;align-items:flex-start;gap:9px;margin-top:22px;padding-top:17px;border-top:1px solid #213447;color:#7890a4;font-size:10px;line-height:1.6}
+#loginGate .login-security svg{width:16px;height:16px;flex-shrink:0;stroke:#50c8a2;fill:none;stroke-width:1.7}
+#loginGate.is-exiting{opacity:0;pointer-events:none}
+@media(max-width:900px){#loginGate{grid-template-columns:1fr;align-content:center;justify-items:center;gap:28px;padding:25px 18px}#loginGate .login-brand{display:none}#loginGate .login-card{justify-self:center;max-width:470px;padding:clamp(24px,7vw,38px)}#loginGate .login-card h2{font-size:29px}}
+@media(max-width:430px){#loginGate{padding:15px;align-content:center}#loginGate .login-card{padding:25px 21px;border-radius:16px}#loginGate .login-card h2{font-size:26px}#loginGate .login-card .login-intro{margin-bottom:24px}#loginGate .login-security{font-size:9px}}
+@media(prefers-reduced-motion:reduce){#loginGate,#loginGate *{transition:none!important}}
+
 </style>
 </head>
 <body>
+<div id="loginGate" role="dialog" aria-modal="true" aria-labelledby="loginTitle">
+  <section class="login-brand" aria-label="NEXUS Control Tower">
+    <div class="login-brand-top"><span class="login-mark">N</span><span class="login-wordmark"><strong>NEXUS</strong><span>CONTROL TOWER</span></span></div>
+    <div class="login-eyebrow">Centro de operaciones · Acceso de participante</div>
+    <h1>Las decisiones<br>mueven la <em>operación.</em></h1>
+    <p>Ingresa al simulador de compras, abastecimiento y logística. Analiza escenarios, resuelve retos y construye tu expediente académico a través de decisiones operativas.</p>
+    <div class="login-systems"><span>01 / Compras</span><span>02 / Abastecimiento</span><span>03 / Logística</span><span>04 / Indicadores</span></div>
+    <div class="login-bottom">CADENA COBALTO S.A. DE C.V. <span>·</span> ACADEMIC SIMULATION</div>
+  </section>
+  <section class="login-card">
+    <div class="card-overline">Identificación requerida</div>
+    <h2 id="loginTitle">Bienvenido al protocolo</h2>
+    <p class="login-intro">Antes de entrar al centro de control, registra tu nombre completo. Se utilizará para identificar tu avance y generar tu reporte individual.</p>
+    <form id="participantLoginForm" novalidate>
+      <label class="field-label" for="entryFullName">Nombre completo del participante</label>
+      <input id="entryFullName" name="participantName" type="text" autocomplete="name" autocapitalize="words" spellcheck="false" placeholder="Ej. María Fernanda López García" minlength="5" maxlength="100" required>
+      <p class="login-hint">Escribe tu nombre y al menos un apellido tal como debe aparecer en el expediente.</p>
+      <button class="login-submit" type="submit">Entrar al protocolo <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <p class="login-error" id="loginError" role="alert" hidden></p>
+    </form>
+    <div class="login-security"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><span>Este acceso identifica al participante en este navegador; no solicita contraseña. Tu progreso se conserva localmente en este dispositivo.</span></div>
+  </section>
+</div>
 <div class="app">
 <aside class="sidebar" id="sidebar">
   <a class="brand" href="#inicio" aria-label="NEXUS inicio"><span class="brand-mark">N</span><span class="brand-text"><strong>NEXUS</strong><small>CONTROL TOWER</small></span></a>
@@ -107,7 +171,8 @@ html,body{background:#050e19}body{font-size:13px}.sidebar{width:144px;background
 <script>
 (()=>{'use strict';
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-const STORE='nexus-control-tower-v1';
+const BASE_STORE='nexus-control-tower-v1';
+let STORE=BASE_STORE;
 const sessionDefs=[
 {id:1,title:'Fundamentos de compras y abastecimiento',short:'Fundamentos',date:'13 de septiembre de 2026',evidence:'Mapa conceptual de compras y abastecimiento',image:'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1600&q=85',story:'La planta recibe una demanda urgente. Debes distinguir necesidad, adquisición y abastecimiento para evitar decisiones de corto plazo que comprometan la operación.'},
 {id:2,title:'Proceso, tipos y principios de compras',short:'Proceso y principios',date:'20 de septiembre de 2026',evidence:'Diagrama de flujo del proceso de compras',image:'https://images.unsplash.com/photo-1566576912321-d58ddd7a6088?auto=format&fit=crop&w=1000&q=85',story:'Una serie de órdenes tiene datos incompletos y dos proveedores presentan riesgos. Sigue el proceso, verifica documentos y toma decisiones éticas.'},
@@ -157,7 +222,8 @@ const orders=[
 const inventory=[{sku:'MAT-001',name:'Acero A36',stock:4200,min:5000,consumption:700,lead:5},{sku:'INS-023',name:'Lubricante industrial',stock:320,min:300,consumption:22,lead:4},{sku:'MAT-118',name:'Tornillería M8',stock:1200,min:2000,consumption:180,lead:6},{sku:'CON-045',name:'Empaques',stock:8500,min:5000,consumption:650,lead:3},{sku:'LIM-007',name:'Detergente industrial',stock:150,min:500,consumption:40,lead:7}];
 const suppliers=[{name:'ACME Industrias',q:90,d:80,c:100,s:70,decision:'Evaluación abierta'},{name:'Proveedor del Norte',q:94,d:85,c:82,s:80,decision:'Aprobado'},{name:'LogiTrans',q:88,d:72,c:92,s:68,decision:'Plan de mejora'},{name:'FerreMax',q:91,d:88,c:84,s:86,decision:'Aprobado'},{name:'CleanPro',q:80,d:80,c:78,s:82,decision:'Seguimiento'}];
 const alerts=[{id:'TRK-330',title:'Retraso crítico de transporte',desc:'Tijuana → Planta Norte · ETA por confirmar',level:'red',action:'Coordinar',impact:'Riesgo de retraso en recepción',resolved:false},{id:'OC-7845',title:'Proveedor sin confirmar',desc:'ACME Industrias · vence en 12 horas',level:'amber',action:'Resolver',impact:'Riesgo de fecha promesa',resolved:false},{id:'INV-005',title:'Inventario bajo mínimo',desc:'5 SKU requieren revisión de punto de reorden',level:'amber',action:'Revisar',impact:'Riesgo de disponibilidad',resolved:false},{id:'FAC-221',title:'Factura en revisión',desc:'Flete con diferencia de $2,340 MXN',level:'blue',action:'Verificar',impact:'Control documental pendiente',resolved:false}];
-let state={name:'',completed:{},attempts:{},errors:0,first:0,skipped:[],points:0,answers:{},actions:[],truck:72,orders:orders.map(o=>({...o})),alerts:alerts.map(a=>({...a})),supplierDecisions:{},fuel:24.8,efficiency:3.8,distance:720,generated:false};
+const makeFreshStudentState=(name='')=>({name,completed:{},attempts:{},errors:0,first:0,skipped:[],points:0,answers:{},actions:[],truck:72,orders:orders.map(o=>({...o})),alerts:alerts.map(a=>({...a})),supplierDecisions:{},fuel:24.8,efficiency:3.8,distance:720,generated:false});
+let state=makeFreshStudentState();
 try{const saved=JSON.parse(localStorage.getItem(STORE)||'null');if(saved){state={...state,...saved,orders:saved.orders?.length?saved.orders:orders.map(o=>({...o})),alerts:saved.alerts?.length?saved.alerts:alerts.map(a=>({...a}))}}}catch(e){}
 // Shuffle concept choices once per load; keep the correct answer attached to its text.
 sessions.forEach(s=>s.questions.forEach(q=>{if(q.options?.length){q.options=q.options.map((text,i)=>({text,correct:i===q.answer})).sort(()=>Math.random()-.5);q.answer=q.options.findIndex(o=>o.correct)}}));
@@ -223,6 +289,36 @@ const printStyle=document.createElement('style');printStyle.textContent='@media 
 function updateDashboardFreight(){const n=Math.max(1,Number(document.getElementById('dashLoads').value)||1);const rate=Math.max(0,Number(document.getElementById('dashRate').value)||0);const pct=Math.max(0,Number(document.getElementById('dashFuelPct').value)||0)/100;const toll=Math.max(0,Number(document.getElementById('dashToll').value)||0);const rework=Math.max(0,Number(document.getElementById('dashRework').value)||0);const base=rate*n,fuel=base*pct,tolls=toll*n,total=base+fuel+tolls+rework;const money=v=>v.toLocaleString('es-MX',{style:'currency',currency:'MXN',maximumFractionDigits:2});document.getElementById('dashFreightSub').textContent=money(base);document.getElementById('dashFuelCost').textContent=money(fuel);document.getElementById('dashTollCost').textContent=money(tolls);document.getElementById('dashReworkCost').textContent=money(rework);document.getElementById('dashGrandTotal').textContent=money(total)+' MXN';}
 ['dashRate','dashLoads','dashFuelPct','dashToll','dashRework'].forEach(id=>document.getElementById(id)?.addEventListener('input',updateDashboardFreight));updateDashboardFreight();
 const refreshStamp=()=>{const el=document.getElementById('heroLastRefresh');if(el)el.textContent=new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});};document.getElementById('refreshDashboard')?.addEventListener('click',refreshStamp);
+
+
+function normalizeParticipantName(value){return String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().replace(/\s+/g,' ').toLowerCase()}
+function participantStoreKey(name){return BASE_STORE+'::'+encodeURIComponent(normalizeParticipantName(name))}
+function enterAsParticipant(rawName){
+  const name=String(rawName||'').trim().replace(/\s+/g,' ');
+  if(name.length<5||name.split(' ').filter(Boolean).length<2){
+    const err=$('#loginError');err.textContent='Escribe tu nombre y al menos un apellido para continuar.';err.hidden=false;$('#entryFullName').setAttribute('aria-invalid','true');$('#entryFullName').focus();return;
+  }
+  const key=participantStoreKey(name);
+  let saved=null;
+  try{
+    saved=JSON.parse(localStorage.getItem(key)||'null');
+    if(!saved){
+      const legacy=JSON.parse(localStorage.getItem(BASE_STORE)||'null');
+      if(legacy&&normalizeParticipantName(legacy.name)===normalizeParticipantName(name))saved=legacy;
+    }
+  }catch(e){saved=null}
+  STORE=key;
+  state=saved?{...makeFreshStudentState(name),...saved,name,orders:saved.orders?.length?saved.orders:orders.map(o=>({...o})),alerts:saved.alerts?.length?saved.alerts:alerts.map(a=>({...a}))}:makeFreshStudentState(name);
+  persist();
+  renderReportOnInit();
+  renderIdentity();
+  const gate=$('#loginGate');gate.classList.add('is-exiting');document.documentElement.classList.remove('login-locked');document.body.classList.remove('login-locked');
+  window.setTimeout(()=>{gate.hidden=true;gate.classList.remove('is-exiting');},280);
+  $('#entryFullName').removeAttribute('aria-invalid');
+  $('#entryFullName').value='';
+}
+$('#participantLoginForm').addEventListener('submit',event=>{event.preventDefault();enterAsParticipant($('#entryFullName').value)});
+document.documentElement.classList.add('login-locked');document.body.classList.add('login-locked');
 
 renderReportOnInit();
 })();
